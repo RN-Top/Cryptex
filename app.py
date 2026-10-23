@@ -15,16 +15,28 @@ PYTHAGOREAN_VALUES = {
     'G':7, 'P':7, 'Y':7, 'H':8, 'Q':8, 'Z':8, 'I':9, 'R':9
 }
 
+LETTER_MEANINGS = {
+    'A': "Initiative & Origin", 'B': "Harmony & Cooperation", 'C': "Creative Spark",
+    'D': "Foundation & Tenacity", 'E': "Freedom & Catalyst", 'F': "Nurturing Heart",
+    'G': "Spiritual Intellect", 'H': "Power & Manifestation", 'I': "Universal Compassion",
+    'J': "Bold Leadership", 'K': "Intuitive Insight", 'L': "Expressive Grace",
+    'M': "Work & Stability", 'N': "Curiosity & Flow", 'O': "Protective Devotion",
+    'P': "Philosophical Depth", 'Q': "Original Authority", 'R': "Mastery & Wisdom",
+    'S': "Dynamic Will", 'T': "Peace & Patience", 'U': "Receptive Abundance",
+    'V': "Architectural Vision", 'W': "Adaptive Transformation", 'X': "Mystery & Transition",
+    'Y': "Intuitive Independence", 'Z': "Spiritual Endurance"
+}
+
 NUMEROLOGY_THEMES = {
-    1: ("The Pioneer", "New beginnings, bold initiative, independence, and raw potential."),
-    2: ("The Mirror", "Partnership, balance, intuition, and diplomatic harmony."),
-    3: ("The Spark", "Creative expansion, joyous self-expression, and communication."),
-    4: ("The Anchor", "Stability, discipline, grounded structure, and order."),
-    5: ("The Catalyst", "Freedom, dynamic movement, curiosity, and transformation."),
-    6: ("The Guardian", "Nurturing love, protective balance, and community healing."),
-    7: ("The Mystic", "Deep introspection, analytical truth, and spiritual search."),
-    8: ("The Crown", "Manifestation, power, material mastery, and ambition."),
-    9: ("The Sage", "Universal wisdom, culmination, compassion, and completion.")
+    1: ("The Pioneer", "New beginnings, bold initiative, independence, and raw potential.", "Step forward fearlessly. A fresh cycle is initiating, urging you to trust your individual vision and lead without hesitation."),
+    2: ("The Mirror", "Partnership, balance, intuition, and diplomatic harmony.", "Seek balance over force. Listen closely to subtle intuitions and cultivate harmony within partnerships and quiet spaces."),
+    3: ("The Spark", "Creative expansion, joyous self-expression, and communication.", "Your voice and creativity hold power right now. Release self-doubt, express your truth authentically, and embrace lighthearted joy."),
+    4: ("The Anchor", "Stability, discipline, grounded structure, and order.", "Build steadily upon solid foundations. Focus on patience, practical habits, and grounding your ideas into tangible reality."),
+    5: ("The Catalyst", "Freedom, dynamic movement, curiosity, and transformation.", "Embrace unexpected shifts and welcome adventure. The winds of change are clearing away stagnant energy to expand your horizons."),
+    6: ("The Guardian", "Nurturing love, protective balance, and community healing.", "Tend to the heart and home. Offer compassion to those you care for, while upholding healthy personal boundaries."),
+    7: ("The Mystic", "Deep introspection, analytical truth, and spiritual search.", "Withdraw into quiet contemplation. The answers you seek cannot be found in outward noise—trust deep reflection and inner wisdom."),
+    8: ("The Crown", "Manifestation, power, material mastery, and ambition.", "Step into your personal authority. Karma and material equilibrium support purposeful efforts to manifest lasting impact."),
+    9: ("The Sage", "Universal wisdom, culmination, compassion, and completion.", "A cycle is completing. Release what no longer serves your growth, forgive past chapters, and step into higher perspective.")
 }
 
 COMMON_WORDS = {
@@ -106,7 +118,6 @@ with c1:
         st.rerun()
 
 with c2:
-    # Character limit removed so your keyboard can freely type 6 letters
     w_input = st.text_input("Set Word (Up to 6 Letters)", placeholder="e.g. LOVE, DREAM, ORACLE, SECRET").strip().upper()
     if st.button("🎯 Align Word", use_container_width=True):
         clean = "".join(c for c in w_input if c in DEVICE_ALPHA)[:6]
@@ -141,7 +152,10 @@ active_len = len(main_word)
 total_num = sum(PYTHAGOREAN_VALUES.get(c, 0) for c in main_word)
 while total_num > 9:
     total_num = sum(int(d) for d in str(total_num))
-num_title, num_desc = NUMEROLOGY_THEMES.get(total_num, ("The Seeker", "Mysterious potential."))
+num_title, num_desc, num_guidance = NUMEROLOGY_THEMES.get(
+    total_num,
+    ("The Seeker", "Mysterious potential.", "Follow your intuition and listen to the wisdom of the cylinder.")
+)
 
 all_orbit_words = []
 rows_data = []
@@ -314,85 +328,96 @@ components.html(table_html, height=500)
 
 st.write("---")
 
-# --- Form The Reading ---
+# --- THE COMPLETE READING (FOR BOTH ALIGNED WORD & CONNECTED WORDS) ---
 unique_words = sorted(list(set(all_orbit_words)), key=lambda w: (-len(w), w))
+letter_breakdown = " • ".join(f"**{c}**={PYTHAGOREAN_VALUES.get(c, 0)} ({LETTER_MEANINGS.get(c, 'Energy')})" for c in main_word)
 
-st.subheader(f"🔮 The Reading for **{main_word}**")
-st.markdown(f"**Vibration Frequency {total_num} — {num_title}:** *{num_desc}*")
+st.subheader(f"🔮 The Oracle Reading for **{main_word}**")
 
+# Part 1: The Aligned Word Reading
+st.markdown(f"#### 🌟 Aligned Word Archetype: **{num_title} (Vibration {total_num})**")
+st.markdown(f"**Core Essence:** *{num_desc}*")
+st.markdown(f"**Oracle Guidance for '{main_word}':** {num_guidance}")
+st.markdown(f"**Pythagorean Letter Vibrations:** {letter_breakdown}")
+
+# Part 2: Connected Surrounding Words Reading
 if unique_words:
     words_badges = ", ".join(f"**{w}**" for w in unique_words[:8])
-    story_text = (
-        f"As the cylinder matrix connects across all 26 rows, the primary energy of {main_word} ({num_title}) "
-        f"is surrounded by the echoes of {', '.join(unique_words[:8])}. "
-        f"This reading indicates that {main_word} calls for {num_desc.lower()} "
-        f"Draw guidance from {unique_words[0]} as your central lesson, and look to {unique_words[-1]} for your next step forward."
+    synthesis_text = (
+        f"As the cylinder matrix turns around **{main_word}**, it activates surrounding echoes across parallel planes: {words_badges}. "
+        f"In this alignment, **{main_word}** works as a catalyst alongside **{unique_words[0]}**, urging you to embody {num_desc.lower()} "
+        f"Let **{unique_words[-1]}** provide grounding clarity as this reading unfolds."
     )
-    st.success(
-        f"**Main Word Alignment:** `{main_word}`\n\n"
-        f"**Words Discovered Around the Cylinder Face:** {words_badges}\n\n"
-        f"**Oracle Interpretation:** {story_text}"
-    )
-    
-    # --- Build Complete Downloadable Text File (Full Rolled-Out Visual) ---
-    file_lines = [
-        "=" * 78,
-        "🗝️ CRYPTEX WERD — COMPLETE CYLINDER ORACLE READING",
-        "=" * 78,
-        f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}",
-        f"Main Word: {main_word} (Length: {active_len} letters)",
-        f"Pythagorean Vibration: Number {total_num} — {num_title}",
-        f"Vibrational Theme: {num_desc}",
-        "",
-        "=" * 78,
-        "FULL ROLLED-OUT WRITTEN VISUAL MATRIX (ALL 26 ROWS ACROSS CYLINDER)",
-        "=" * 78,
-        f"  {'ROW OFFSET':<14} |  {'RINGS 1 - 6':<13} | WORDS FORMED",
-        "-" * 16 + "+" + "-" * 17 + "+" + "-" * 43
-    ]
-    for r in rows_data:
-        if r['is_center']:
-            chars_str = f"[{' '.join(r['chars'][:active_len])}]"
-        else:
-            chars_str = f" {' '.join(r['chars'])} "
-        words_str = f"⭐ {', '.join(r['words'])}" if r['words'] else ""
-        file_lines.append(f"{r['label']:<16} | {chars_str:<15} | {words_str}")
-        
-    file_lines.extend([
-        "=" * 78,
-        "ORACLE INTERPRETATION & READING SYNTHESIS",
-        "=" * 78,
-        f"Main Word Anchor: {main_word}",
-        f"Orbiting Words Discovered: {', '.join(unique_words[:8])}",
-        "",
-        story_text,
-        "=" * 78
-    ])
-    reading_file_content = "\n".join(file_lines)
-    
-    # Save & Download Buttons
-    save_c1, save_c2 = st.columns(2)
-    with save_c1:
-        st.download_button(
-            label="📥 Download Reading File (.txt)",
-            data=reading_file_content,
-            file_name=f"reading_{main_word.lower()}_{time.strftime('%Y%m%d_%H%M%S')}.txt",
-            mime="text/plain",
-            use_container_width=True
-        )
-    with save_c2:
-        if st.button("💾 Save to Reading Log", use_container_width=True):
-            st.session_state.journal.append({
-                "time": time.strftime("%Y-%m-%d %H:%M:%S"),
-                "word": main_word,
-                "num": total_num,
-                "title": num_title,
-                "words": unique_words[:8],
-                "story": story_text
-            })
-            st.toast("Reading saved to your log!")
+    st.markdown("---")
+    st.markdown(f"#### 🌐 Surrounding Orbit Words: {words_badges}")
+    st.success(f"**Circumference Synthesis:** {synthesis_text}")
 else:
-    st.info(f"**{main_word}** is aligned on the main row. Dial individual rings or spin to discover words connecting around the face!")
+    synthesis_text = (
+        f"**{main_word}** resonates in solitary focus on the center line. "
+        f"Its pure vibrational frequency of **{total_num} ({num_title})** stands undisturbed, directing your attention fully to its core archetype: {num_desc.lower()}"
+    )
+    st.info(synthesis_text)
+
+# --- Build Complete Downloadable Text File ---
+file_lines = [
+    "=" * 78,
+    "🗝️ CRYPTEX WERD — COMPLETE CYLINDER ORACLE READING",
+    "=" * 78,
+    f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+    f"Aligned Main Word: {main_word} (Length: {active_len} letters)",
+    f"Pythagorean Vibration: Number {total_num} — {num_title}",
+    f"Vibrational Essence: {num_desc}",
+    f"Oracle Guidance: {num_guidance}",
+    f"Letter Breakdown: " + " | ".join(f"{c}={PYTHAGOREAN_VALUES.get(c,0)} ({LETTER_MEANINGS.get(c,'')})" for c in main_word),
+    "",
+    "=" * 78,
+    "FULL ROLLED-OUT WRITTEN VISUAL MATRIX (ALL 26 ROWS ACROSS CYLINDER)",
+    "=" * 78,
+    f"  {'ROW OFFSET':<14} |  {'RINGS 1 - 6':<13} | WORDS FORMED",
+    "-" * 16 + "+" + "-" * 17 + "+" + "-" * 43
+]
+for r in rows_data:
+    if r['is_center']:
+        chars_str = f"[{' '.join(r['chars'][:active_len])}]"
+    else:
+        chars_str = f" {' '.join(r['chars'])} "
+    words_str = f"⭐ {', '.join(r['words'])}" if r['words'] else ""
+    file_lines.append(f"{r['label']:<16} | {chars_str:<15} | {words_str}")
+    
+file_lines.extend([
+    "=" * 78,
+    "CIRCUMFERENCE ORACLE SYNTHESIS",
+    "=" * 78,
+    f"Orbiting Words Found: {', '.join(unique_words) if unique_words else 'None (Solitary Focus)'}",
+    "",
+    synthesis_text,
+    "=" * 78
+])
+reading_file_content = "\n".join(file_lines)
+
+# Save & Download Buttons
+st.write("---")
+save_c1, save_c2 = st.columns(2)
+with save_c1:
+    st.download_button(
+        label=f"📥 Download Reading File for '{main_word}' (.txt)",
+        data=reading_file_content,
+        file_name=f"reading_{main_word.lower()}_{time.strftime('%Y%m%d_%H%M%S')}.txt",
+        mime="text/plain",
+        use_container_width=True
+    )
+with save_c2:
+    if st.button("💾 Save to Reading Log", use_container_width=True):
+        st.session_state.journal.append({
+            "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "word": main_word,
+            "num": total_num,
+            "title": num_title,
+            "guidance": num_guidance,
+            "words": unique_words[:8],
+            "story": synthesis_text
+        })
+        st.toast("Reading saved to your log!")
 
 # --- Saved Readings Log ---
 if st.session_state.journal:
@@ -400,6 +425,8 @@ if st.session_state.journal:
     with st.expander(f"📖 Saved Readings Log ({len(st.session_state.journal)} saved)", expanded=False):
         for idx, entry in enumerate(reversed(st.session_state.journal)):
             st.markdown(f"**#{len(st.session_state.journal) - idx}: {entry['word']} (Vibration {entry['num']} — {entry['title']})** — *{entry['time']}*")
-            st.markdown(f"Words found: `{', '.join(entry['words'])}`")
+            st.markdown(f"Guidance: *{entry['guidance']}*")
+            if entry['words']:
+                st.markdown(f"Orbit words: `{', '.join(entry['words'])}`")
             st.markdown(f"> {entry['story']}")
             st.markdown("---")
