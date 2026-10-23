@@ -4,9 +4,9 @@ import random
 import os
 import time
 
-st.set_page_config(page_title="Drew's Cryptex Matrix", page_icon="🗝️", layout="wide")
+st.set_page_config(page_title="Cryptex werd", page_icon="🗝️", layout="wide")
 
-# Drew's 26-letter Pythagorean reduction alphabet:
+# 26-letter Pythagorean reduction alphabet:
 DEVICE_ALPHA = "AJSBKTCLUDMVENWFOXGPYHQZIR"
 
 PYTHAGOREAN_VALUES = {
@@ -93,7 +93,7 @@ def rotate_ring(i, step):
 def get_center_word():
     return "".join(DEVICE_ALPHA[st.session_state.offsets[i]] for i in range(6))
 
-st.title("🗝️ Drew's Cryptex — Whole-Face Cylinder Matrix")
+st.title("🗝️ Cryptex werd")
 st.caption("All 26 rows unrolled in full view so you can see how letters connect around the entire cylinder at once.")
 
 # --- Top Controls: Spin & Word Alignment ---
@@ -293,7 +293,7 @@ for row in rows_data:
 table_html += "</div></body></html>"
 
 st.markdown("### 📜 The Whole Cylinder Face (All 26 Rows Unrolled)")
-st.caption("Every row around Drew's cylinder is shown below. Letters that connect into words glow in green. The Center row is your Main Word.")
+st.caption("Every row around the cylinder is shown below. Letters that connect into words glow in green. The Center row is your Main Word.")
 
 components.html(table_html, height=500)
 
@@ -308,7 +308,7 @@ st.markdown(f"**Vibration Frequency {total_num} — {num_title}:** *{num_desc}*"
 if unique_words:
     words_badges = ", ".join(f"**{w}**" for w in unique_words[:8])
     story_text = (
-        f"As Drew's cylinder matrix connects across all 26 rows, the primary energy of {main_word} ({num_title}) "
+        f"As the cylinder matrix connects across all 26 rows, the primary energy of {main_word} ({num_title}) "
         f"is surrounded by the echoes of {', '.join(unique_words[:8])}. "
         f"This reading indicates that {main_word} calls for {num_desc.lower()} "
         f"Draw guidance from {unique_words[0]} as your central lesson, and look to {unique_words[-1]} for your next step forward."
@@ -322,7 +322,7 @@ if unique_words:
     # --- Build Downloadable Text File ---
     file_lines = [
         "==================================================",
-        "🗝️ DREW'S CRYPTEX — CYLINDER ORACLE READING",
+        "🗝️ CRYPTEX WERD — CYLINDER ORACLE READING",
         f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}",
         "==================================================",
         f"MAIN WORD: {main_word}",
