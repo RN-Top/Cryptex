@@ -6,7 +6,7 @@ import time
 
 st.set_page_config(page_title="Cryptex werd", page_icon="🗝️", layout="wide")
 
-# 26-letter Pythagorean reduction alphabet:
+# Drew's 26-letter Pythagorean reduction alphabet:
 DEVICE_ALPHA = "AJSBKTCLUDMVENWFOXGPYHQZIR"
 
 PYTHAGOREAN_VALUES = {
@@ -16,7 +16,7 @@ PYTHAGOREAN_VALUES = {
 }
 
 NUMEROLOGY_THEMES = {
-    1: ("The Pioneer", "New beginnings, leadership, and bold forward action."),
+    1: ("The Pioneer", "New beginnings, bold initiative, independence, and raw potential."),
     2: ("The Mirror", "Partnership, balance, intuition, and diplomatic harmony."),
     3: ("The Spark", "Creative expansion, joyous self-expression, and communication."),
     4: ("The Anchor", "Stability, discipline, grounded structure, and order."),
@@ -87,28 +87,32 @@ if "journal" not in st.session_state:
 if "offsets" not in st.session_state:
     st.session_state.offsets = [DEVICE_ALPHA.index(c) for c in "ORACLE"]
 
+if "main_word" not in st.session_state:
+    st.session_state.main_word = "ORACLE"
+
 def rotate_ring(i, step):
     st.session_state.offsets[i] = (st.session_state.offsets[i] + step) % 26
-
-def get_center_word():
-    return "".join(DEVICE_ALPHA[st.session_state.offsets[i]] for i in range(6))
+    st.session_state.main_word = "".join(DEVICE_ALPHA[st.session_state.offsets[c]] for c in range(6))
 
 st.title("🗝️ Cryptex werd")
-st.caption("All 26 rows unrolled in full view so you can see how letters connect around the entire cylinder at once.")
+st.caption("All 26 rows unrolled in full view. Works with words up to 6 letters.")
 
 # --- Top Controls: Spin & Word Alignment ---
 c1, c2 = st.columns([1, 1])
 with c1:
     if st.button("🎲 Random Spin All Rings", use_container_width=True, type="primary"):
         st.session_state.offsets = [random.randint(0, 25) for _ in range(6)]
+        st.session_state.main_word = "".join(DEVICE_ALPHA[st.session_state.offsets[c]] for c in range(6))
         st.rerun()
 
 with c2:
-    w_input = st.text_input("Align Main Word (1-6 letters)", max_chars=6, placeholder="e.g. ORACLE, SECRET, NATURE").strip().upper()
-    if st.button("🎯 Set Main Word", use_container_width=True):
-        clean = "".join(c for c in w_input if c in DEVICE_ALPHA)
+    # Character limit removed so your keyboard can freely type 6 letters
+    w_input = st.text_input("Set Word (Up to 6 Letters)", placeholder="e.g. LOVE, DREAM, ORACLE, SECRET").strip().upper()
+    if st.button("🎯 Align Word", use_container_width=True):
+        clean = "".join(c for c in w_input if c in DEVICE_ALPHA)[:6]
         if clean:
-            for i, char in enumerate(clean[:6]):
+            st.session_state.main_word = clean
+            for i, char in enumerate(clean):
                 st.session_state.offsets[i] = DEVICE_ALPHA.index(char)
             st.rerun()
 
@@ -131,7 +135,9 @@ for i, col in enumerate(btn_cols):
 st.write("---")
 
 # --- Scan All 26 Rows and Build the Full-Face View ---
-main_word = get_center_word()
+main_word = st.session_state.main_word
+active_len = len(main_word)
+
 total_num = sum(PYTHAGOREAN_VALUES.get(c, 0) for c in main_word)
 while total_num > 9:
     total_num = sum(int(d) for d in str(total_num))
@@ -241,6 +247,10 @@ table_html = """
         font-size: 20px;
         font-weight: 900;
     }
+    .tile-dim {
+        background: #1c1d22;
+        color: #444;
+    }
     .tile-highlight {
         background: #1b5e20;
         color: #a5d6a7;
@@ -270,11 +280,16 @@ for row in rows_data:
     tiles_str = ""
     for c_idx, char in enumerate(row["chars"]):
         tile_class = "tile"
+        display_char = char
         if row["is_center"]:
-            tile_class += " tile-center"
+            if c_idx < active_len:
+                tile_class += " tile-center"
+            else:
+                tile_class += " tile-dim"
+                display_char = "·"
         elif row["mask"][c_idx]:
             tile_class += " tile-highlight"
-        tiles_str += f'<div class="{tile_class}">{char}</div>'
+        tiles_str += f'<div class="{tile_class}">{display_char}</div>'
         
     words_str = ", ".join(row["words"]) if row["words"] else ""
     if words_str:
@@ -325,7 +340,7 @@ if unique_words:
         "🗝️ CRYPTEX WERD — COMPLETE CYLINDER ORACLE READING",
         "=" * 78,
         f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}",
-        f"Main Word: {main_word}",
+        f"Main Word: {main_word} (Length: {active_len} letters)",
         f"Pythagorean Vibration: Number {total_num} — {num_title}",
         f"Vibrational Theme: {num_desc}",
         "",
@@ -336,7 +351,10 @@ if unique_words:
         "-" * 16 + "+" + "-" * 17 + "+" + "-" * 43
     ]
     for r in rows_data:
-        chars_str = f"[{' '.join(r['chars'])}]" if r['is_center'] else f" {' '.join(r['chars'])} "
+        if r['is_center']:
+            chars_str = f"[{' '.join(r['chars'][:active_len])}]"
+        else:
+            chars_str = f" {' '.join(r['chars'])} "
         words_str = f"⭐ {', '.join(r['words'])}" if r['words'] else ""
         file_lines.append(f"{r['label']:<16} | {chars_str:<15} | {words_str}")
         
