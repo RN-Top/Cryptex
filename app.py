@@ -2,10 +2,11 @@ import streamlit as st
 import streamlit.components.v1 as components
 import random
 import os
+import time
 
-st.set_page_config(page_title="Drew's Cryptex", page_icon="🗝️", layout="centered")
+st.set_page_config(page_title="Drew's Cryptex Matrix", page_icon="🗝️", layout="wide")
 
-# Drew's 26-letter Pythagorean cipher alphabet
+# Drew's 26-letter Pythagorean reduction alphabet:
 DEVICE_ALPHA = "AJSBKTCLUDMVENWFOXGPYHQZIR"
 
 PYTHAGOREAN_VALUES = {
@@ -15,15 +16,15 @@ PYTHAGOREAN_VALUES = {
 }
 
 NUMEROLOGY_THEMES = {
-    1: ("The Pioneer", "New beginnings, bold initiative, independence, and raw potential."),
-    2: ("The Mirror", "Partnership, balance, intuition, receptivity, and diplomatic harmony."),
-    3: ("The Spark", "Creative expansion, joyous self-expression, communication, and enthusiasm."),
-    4: ("The Anchor", "Stability, grounded structure, discipline, patience, and tangible results."),
-    5: ("The Catalyst", "Freedom, dynamic movement, curiosity, travel, and sudden transformation."),
-    6: ("The Guardian", "Nurturing love, domestic balance, protection, and heartfelt healing."),
-    7: ("The Mystic", "Deep introspection, analytical wisdom, spiritual search, and inner mystery."),
-    8: ("The Crown", "Manifestation, power, material mastery, ambition, and karmic balance."),
-    9: ("The Sage", "Universal wisdom, culmination, compassion, completion, and higher perspective.")
+    1: ("The Pioneer", "New beginnings, leadership, and bold forward action."),
+    2: ("The Mirror", "Partnership, balance, intuition, and diplomatic harmony."),
+    3: ("The Spark", "Creative expansion, joyous self-expression, and communication."),
+    4: ("The Anchor", "Stability, discipline, grounded structure, and order."),
+    5: ("The Catalyst", "Freedom, dynamic movement, curiosity, and transformation."),
+    6: ("The Guardian", "Nurturing love, protective balance, and community healing."),
+    7: ("The Mystic", "Deep introspection, analytical truth, and spiritual search."),
+    8: ("The Crown", "Manifestation, power, material mastery, and ambition."),
+    9: ("The Sage", "Universal wisdom, culmination, compassion, and completion.")
 }
 
 COMMON_WORDS = {
@@ -58,7 +59,8 @@ COMMON_WORDS = {
     "SNOW", "EAST", "SECRET", "ORACLE", "RIDDLE", "CIPHER", "TEMPLE", "SYMBOL",
     "DREAM", "TRUTH", "SPIRIT", "WISDOM", "VISION", "SHADOW", "FLOWER", "PLANET",
     "PATH", "GATE", "RING", "SUN", "SOUL", "HOPE", "PEACE", "SEEK", "GUIDE",
-    "MAGIC", "RISING", "SHINE", "QUEST", "POWER", "VOICE", "HEART", "RIVER"
+    "MAGIC", "RISING", "SHINE", "QUEST", "POWER", "VOICE", "HEART", "RIVER",
+    "VEX", "FIR", "LUN", "ENG", "MVO", "COMBO"
 }
 
 @st.cache_resource(show_spinner=False)
@@ -79,11 +81,11 @@ def load_words():
 DICTIONARY = load_words()
 
 # --- State ---
+if "journal" not in st.session_state:
+    st.session_state.journal = []
+
 if "offsets" not in st.session_state:
     st.session_state.offsets = [DEVICE_ALPHA.index(c) for c in "ORACLE"]
-
-if "cylinder_shift" not in st.session_state:
-    st.session_state.cylinder_shift = 0
 
 def rotate_ring(i, step):
     st.session_state.offsets[i] = (st.session_state.offsets[i] + step) % 26
@@ -91,45 +93,29 @@ def rotate_ring(i, step):
 def get_center_word():
     return "".join(DEVICE_ALPHA[st.session_state.offsets[i]] for i in range(6))
 
-st.title("🗝️ Drew's Cryptex")
-st.caption("Based on Drew's Physical 6-Ring Cylinder Device")
+st.title("🗝️ Drew's Cryptex — Whole-Face Cylinder Matrix")
+st.caption("All 26 rows unrolled in full view so you can see how letters connect around the entire cylinder at once.")
 
-# --- Render 3D Cylinder with Center and Surrounding Rows ---
-shift = st.session_state.cylinder_shift
-rings_html = ""
-for i in range(6):
-    off = (st.session_state.offsets[i] + shift) % 26
-    m2 = DEVICE_ALPHA[(off - 2) % 26]
-    m1 = DEVICE_ALPHA[(off - 1) % 26]
-    c0 = DEVICE_ALPHA[off % 26]
-    p1 = DEVICE_ALPHA[(off + 1) % 26]
-    p2 = DEVICE_ALPHA[(off + 2) % 26]
-    rings_html += (
-        '<div class="ring-col">'
-        f'<div class="char-faint">{m2}</div>'
-        f'<div class="char-mid">{m1}</div>'
-        f'<div class="char-target">{c0}</div>'
-        f'<div class="char-mid">{p1}</div>'
-        f'<div class="char-faint">{p2}</div>'
-        '</div>'
-    )
+# --- Top Controls: Spin & Word Alignment ---
+c1, c2 = st.columns([1, 1])
+with c1:
+    if st.button("🎲 Random Spin All Rings", use_container_width=True, type="primary"):
+        st.session_state.offsets = [random.randint(0, 25) for _ in range(6)]
+        st.rerun()
 
-cylinder_iframe = (
-    '<!DOCTYPE html><html><head><style>'
-    'body { margin: 0; padding: 0; background: transparent; font-family: sans-serif; }'
-    '.cylinder-box { display: flex; justify-content: center; gap: 8px; background: #151619; border: 3px solid #d4af37; border-radius: 12px; padding: 12px 6px; box-sizing: border-box; }'
-    '.ring-col { display: flex; flex-direction: column; align-items: center; background: #222429; border: 1px solid #44351a; border-radius: 6px; width: 48px; }'
-    '.char-faint { font-size: 14px; color: #555; height: 24px; line-height: 24px; }'
-    '.char-mid { font-size: 18px; color: #999; height: 28px; line-height: 28px; }'
-    '.char-target { font-size: 26px; font-weight: 900; color: #fff; background: linear-gradient(180deg, #d4af37, #8b6508); width: 100%; text-align: center; height: 42px; line-height: 42px; border-top: 2px solid #ffd700; border-bottom: 2px solid #ffd700; }'
-    '</style></head><body>'
-    f'<div class="cylinder-box">{rings_html}</div>'
-    '</body></html>'
-)
+with c2:
+    w_input = st.text_input("Align Main Word (1-6 letters)", max_chars=6, placeholder="e.g. ORACLE, SECRET, NATURE").strip().upper()
+    if st.button("🎯 Set Main Word", use_container_width=True):
+        clean = "".join(c for c in w_input if c in DEVICE_ALPHA)
+        if clean:
+            for i, char in enumerate(clean[:6]):
+                st.session_state.offsets[i] = DEVICE_ALPHA.index(char)
+            st.rerun()
 
-components.html(cylinder_iframe, height=195)
+st.write("---")
 
-# --- Individual Ring Stepper Buttons ---
+# --- Column Dials for the 6 Rings ---
+st.markdown("#### Dial Individual Rings:")
 btn_cols = st.columns(6)
 for i, col in enumerate(btn_cols):
     with col:
@@ -137,104 +123,259 @@ for i, col in enumerate(btn_cols):
             rotate_ring(i, -1)
             st.rerun()
         cur = DEVICE_ALPHA[st.session_state.offsets[i]]
-        st.markdown(f"<div style='text-align:center; font-weight:bold; color:#ffd700;'>{cur}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; color:#ffd700; background:#222429; border-radius:4px; padding:2px;'>Ring {i+1}: {cur}</div>", unsafe_allow_html=True)
         if st.button("▼", key=f"d_{i}", use_container_width=True):
             rotate_ring(i, 1)
             st.rerun()
 
 st.write("---")
 
-# --- Quick Controls ---
-c1, c2 = st.columns(2)
-with c1:
-    st.subheader("🎲 Spin Cylinder")
-    if st.button("🎲 Random Spin", use_container_width=True, type="primary"):
-        st.session_state.offsets = [random.randint(0, 25) for _ in range(6)]
-        st.session_state.cylinder_shift = 0
-        st.rerun()
-
-with c2:
-    st.subheader("🎯 Align Main Word")
-    user_input = st.text_input("Enter 1-6 Letters", max_chars=6).strip().upper()
-    if st.button("Set Main Word", use_container_width=True):
-        clean = "".join(c for c in user_input if c in DEVICE_ALPHA)
-        if clean:
-            for i, char in enumerate(clean[:6]):
-                st.session_state.offsets[i] = DEVICE_ALPHA.index(char)
-            st.session_state.cylinder_shift = 0
-            st.rerun()
-
-st.write("---")
-
-# --- Scan All 26 Rows Around the Main Word ---
+# --- Scan All 26 Rows and Build the Full-Face View ---
 main_word = get_center_word()
 total_num = sum(PYTHAGOREAN_VALUES.get(c, 0) for c in main_word)
 while total_num > 9:
     total_num = sum(int(d) for d in str(total_num))
 num_title, num_desc = NUMEROLOGY_THEMES.get(total_num, ("The Seeker", "Mysterious potential."))
 
-all_found_rows = []
 all_orbit_words = []
+rows_data = []
 
-for s in range(26):
-    row_chars = "".join(DEVICE_ALPHA[(st.session_state.offsets[i] + s) % 26] for i in range(6))
-    row_words = []
+# Scan all 26 rows around the cylinder (-12 to +13)
+for shift in range(-12, 14):
+    row_chars = [DEVICE_ALPHA[(st.session_state.offsets[c] + shift) % 26] for c in range(6)]
+    row_str = "".join(row_chars)
+    
+    # Detect valid English words
+    found_words = []
     for length in [6, 5, 4, 3]:
         for start in range(7 - length):
-            sub = row_chars[start:start+length]
-            if sub in DICTIONARY and sub not in row_words:
-                row_words.append(sub)
-    if row_words:
-        label = "CENTER (Row 0)" if s == 0 else f"Row +{s}" if s <= 13 else f"Row -{26 - s}"
-        all_found_rows.append((s, label, row_chars, row_words))
-        if s != 0:
-            all_orbit_words.extend(row_words)
+            sub = row_str[start:start+length]
+            if sub in DICTIONARY and sub not in [x[0] for x in found_words]:
+                found_words.append((sub, start, length))
+    
+    # Mark which letter positions are part of a detected word
+    highlight_mask = [False] * 6
+    for sub, start, length in found_words:
+        for idx in range(start, start + length):
+            highlight_mask[idx] = True
+            
+    is_center = (shift == 0)
+    label = "🌟 MAIN WORD (Row 0)" if is_center else f"Row {shift:+d}"
+    
+    word_names = [x[0] for x in found_words]
+    if not is_center:
+        all_orbit_words.extend(word_names)
+        
+    rows_data.append({
+        "shift": shift,
+        "is_center": is_center,
+        "label": label,
+        "chars": row_chars,
+        "mask": highlight_mask,
+        "words": word_names
+    })
 
-# Unique words discovered around the main word
-unique_surrounding = sorted(list(set(all_orbit_words)), key=lambda w: (-len(w), w))
+# --- Build Full-Face HTML Table ---
+table_html = """
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body { margin: 0; padding: 4px; background: transparent; font-family: -apple-system, sans-serif; color: #eee; }
+    .matrix-wrapper {
+        background: #111317;
+        border: 2px solid #554422;
+        border-radius: 12px;
+        padding: 10px;
+        max-height: 480px;
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+    .row-line {
+        display: flex;
+        align-items: center;
+        padding: 4px 6px;
+        margin-bottom: 4px;
+        border-radius: 6px;
+        background: #1a1c22;
+    }
+    .row-center {
+        background: linear-gradient(90deg, #3d2f0a, #5c4710, #3d2f0a);
+        border: 2px solid #ffd700;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+    }
+    .row-active-word {
+        background: #18261e;
+        border-left: 3px solid #2ecc71;
+    }
+    .label-col {
+        width: 130px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #b0aba0;
+    }
+    .label-center {
+        color: #ffd700;
+        font-size: 14px;
+    }
+    .tiles-col {
+        display: flex;
+        gap: 6px;
+        margin-right: 15px;
+    }
+    .tile {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        font-family: monospace;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 4px;
+        background: #252830;
+        color: #ccc;
+    }
+    .tile-center {
+        background: linear-gradient(180deg, #d4af37, #8b6508);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 900;
+    }
+    .tile-highlight {
+        background: #1b5e20;
+        color: #a5d6a7;
+        box-shadow: 0 0 6px #4caf50;
+        border: 1px solid #81c784;
+    }
+    .words-col {
+        font-size: 13px;
+        font-weight: 600;
+        color: #81c784;
+    }
+</style>
+</head>
+<body>
+<div class="matrix-wrapper">
+"""
 
-# --- FORM THE READING ---
-st.subheader(f"🔮 The Reading for **{main_word}**")
-st.markdown(f"**Vibration Frequency {total_num} — {num_title}:** *{num_desc}*")
+for row in rows_data:
+    row_class = "row-line"
+    if row["is_center"]:
+        row_class += " row-center"
+    elif row["words"]:
+        row_class += " row-active-word"
+        
+    label_class = "label-col label-center" if row["is_center"] else "label-col"
+    
+    tiles_str = ""
+    for c_idx, char in enumerate(row["chars"]):
+        tile_class = "tile"
+        if row["is_center"]:
+            tile_class += " tile-center"
+        elif row["mask"][c_idx]:
+            tile_class += " tile-highlight"
+        tiles_str += f'<div class="{tile_class}">{char}</div>'
+        
+    words_str = ", ".join(row["words"]) if row["words"] else ""
+    if words_str:
+        words_html = f'<div class="words-col">⭐ {words_str}</div>'
+    else:
+        words_html = '<div class="words-col" style="color:#555;">-</div>'
+        
+    table_html += f"""
+    <div class="{row_class}">
+        <div class="{label_class}">{row['label']}</div>
+        <div class="tiles-col">{tiles_str}</div>
+        {words_html}
+    </div>
+    """
 
-# Reading synthesis: weaving main word and surrounding words together
-if unique_surrounding:
-    words_highlight = ", ".join(f"**{w}**" for w in unique_surrounding[:6])
-    story = (
-        f"The focal anchor of this configuration is **{main_word}**. "
-        f"As Drew's cylinder turns around its circumference, hidden echoes surface: {words_highlight}. "
-        f"Together, these orbiting words reveal that **{main_word}** is connected to {num_desc.lower()} "
-        f"Focus on **{unique_surrounding[0]}** as the primary lesson, while letting **{unique_surrounding[-1]}** guide your next step."
-    )
-    st.info(story)
-else:
-    st.info(f"**{main_word}** stands in solitary focus on the reading line. Rotate individual rings or spin to reveal its orbiting words.")
+table_html += "</div></body></html>"
+
+st.markdown("### 📜 The Whole Cylinder Face (All 26 Rows Unrolled)")
+st.caption("Every row around Drew's cylinder is shown below. Letters that connect into words glow in green. The Center row is your Main Word.")
+
+components.html(table_html, height=500)
 
 st.write("---")
 
-# --- Circumference Explorer (Turn the whole cylinder) ---
-st.subheader("📜 Inspect Words Formed Around the Cylinder")
-st.write(f"Drew's cylinder has 26 rows around its circumference. Found **{len(all_found_rows)}** rows with valid English words:")
+# --- Form The Reading ---
+unique_words = sorted(list(set(all_orbit_words)), key=lambda w: (-len(w), w))
 
-# Option to roll the whole cylinder to any row
-roll_col1, roll_col2 = st.columns([3, 1])
-with roll_col1:
-    new_shift = st.slider("Rotate Entire Cylinder View (Row Offset)", min_value=0, max_value=25, value=st.session_state.cylinder_shift)
-    if new_shift != st.session_state.cylinder_shift:
-        st.session_state.cylinder_shift = new_shift
-        st.rerun()
+st.subheader(f"🔮 The Reading for **{main_word}**")
+st.markdown(f"**Vibration Frequency {total_num} — {num_title}:** *{num_desc}*")
 
-with roll_col2:
-    if st.button("Reset to Center", use_container_width=True):
-        st.session_state.cylinder_shift = 0
-        st.rerun()
+if unique_words:
+    words_badges = ", ".join(f"**{w}**" for w in unique_words[:8])
+    story_text = (
+        f"As Drew's cylinder matrix connects across all 26 rows, the primary energy of {main_word} ({num_title}) "
+        f"is surrounded by the echoes of {', '.join(unique_words[:8])}. "
+        f"This reading indicates that {main_word} calls for {num_desc.lower()} "
+        f"Draw guidance from {unique_words[0]} as your central lesson, and look to {unique_words[-1]} for your next step forward."
+    )
+    st.success(
+        f"**Main Word Alignment:** `{main_word}`\n\n"
+        f"**Words Discovered Around the Cylinder Face:** {words_badges}\n\n"
+        f"**Oracle Interpretation:** {story_text}"
+    )
+    
+    # --- Build Downloadable Text File ---
+    file_lines = [
+        "==================================================",
+        "🗝️ DREW'S CRYPTEX — CYLINDER ORACLE READING",
+        f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+        "==================================================",
+        f"MAIN WORD: {main_word}",
+        f"Pythagorean Vibration: Number {total_num} ({num_title})",
+        f"Vibrational Meaning: {num_desc}",
+        "",
+        "--------------------------------------------------",
+        "WORDS DISCOVERED AROUND THE CYLINDER FACE:",
+        "--------------------------------------------------"
+    ]
+    for row in rows_data:
+        if row["words"]:
+            file_lines.append(f"{row['label']:<24} | {' '.join(row['chars'])} -> {', '.join(row['words'])}")
+    file_lines.extend([
+        "",
+        "--------------------------------------------------",
+        "ORACLE INTERPRETATION:",
+        "--------------------------------------------------",
+        story_text,
+        "=================================================="
+    ])
+    reading_file_content = "\n".join(file_lines)
+    
+    # Save & Download Buttons
+    save_c1, save_c2 = st.columns(2)
+    with save_c1:
+        st.download_button(
+            label="📥 Download Reading File (.txt)",
+            data=reading_file_content,
+            file_name=f"reading_{main_word.lower()}_{time.strftime('%Y%m%d_%H%M%S')}.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+    with save_c2:
+        if st.button("💾 Save to Reading Log", use_container_width=True):
+            st.session_state.journal.append({
+                "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "word": main_word,
+                "num": total_num,
+                "title": num_title,
+                "words": unique_words[:8],
+                "story": story_text
+            })
+            st.toast("Reading saved to your log!")
+else:
+    st.info(f"**{main_word}** is aligned on the main row. Dial individual rings or spin to discover words connecting around the face!")
 
-# Display all rows and their detected words
-for s, label, row_chars, words in all_found_rows:
-    is_active = (s == st.session_state.cylinder_shift)
-    bullet = "🌟" if is_active else "•"
-    word_str = ", ".join(words)
-    if is_active:
-        st.markdown(f"**{bullet} {label}:** `{row_chars}` $\\rightarrow$ :green[**{word_str}**] *(currently viewing)*")
-    else:
-        st.markdown(f"{bullet} **{label}:** `{row_chars}` $\\rightarrow$ :green[**{word_str}**]")
+# --- Saved Readings Log ---
+if st.session_state.journal:
+    st.write("---")
+    with st.expander(f"📖 Saved Readings Log ({len(st.session_state.journal)} saved)", expanded=False):
+        for idx, entry in enumerate(reversed(st.session_state.journal)):
+            st.markdown(f"**#{len(st.session_state.journal) - idx}: {entry['word']} (Vibration {entry['num']} — {entry['title']})** — *{entry['time']}*")
+            st.markdown(f"Words found: `{', '.join(entry['words'])}`")
+            st.markdown(f"> {entry['story']}")
+            st.markdown("---")
