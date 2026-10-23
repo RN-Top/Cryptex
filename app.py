@@ -1,8 +1,6 @@
 import streamlit as st
 import random
-import time
 
-# --- Page Setup ---
 st.set_page_config(page_title="Drew's Cryptex", page_icon="🗝️", layout="centered")
 
 # Drew's exact 26-letter Pythagorean reduction alphabet:
@@ -42,32 +40,27 @@ COMMON_WORDS = {
     "KEEP", "NEVER", "LAST", "CITY", "TREE", "CROSS", "FARM", "HARD", "START",
     "MIGHT", "STORY", "DRAW", "LATE", "PRESS", "CLOSE", "NIGHT", "REAL", "LIFE",
     "NORTH", "OPEN", "SEEM", "NEXT", "WHITE", "BEGIN", "WALK", "PAPER", "GROUP",
-    "MUSIC", "BOTH", "MARK", "OFTEN", "LETTER", "UNTIL", "MILE", "RIVER", "FEET",
-    "CARE", "BOOK", "RAIN", "ROOM", "FRIEND", "IDEA", "FISH", "STOP", "BASE",
-    "HEAR", "HORSE", "SURE", "WATCH", "COLOR", "FACE", "WOOD", "MAIN", "GIRL",
-    "YOUNG", "READY", "ABOVE", "EVER", "LIST", "FEEL", "TALK", "BIRD", "SOON",
-    "BODY", "FAMILY", "DIRECT", "LEAVE", "SONG", "DOOR", "BLACK", "SHORT",
-    "CLASS", "WIND", "SHIP", "AREA", "HALF", "ROCK", "ORDER", "FIRE", "SOUTH",
-    "PIECE", "TOLD", "PASS", "SINCE", "WHOLE", "KING", "SPACE", "HEARD", "BEST",
-    "HOUR", "TRUE", "FIVE", "STEP", "EARLY", "HOLD", "WEST", "GROUND", "REACH",
-    "FAST", "SING", "LISTEN", "TABLE", "TRAVEL", "LESS", "SIMPLE", "CENTER",
-    "LOVE", "PERSON", "MONEY", "SERVE", "ROAD", "RULE", "PULL", "COLD", "VOICE",
-    "POWER", "TOWN", "FINE", "FALL", "LEAD", "DARK", "WAIT", "PLAN", "STAR",
-    "REST", "ABLE", "DONE", "DRIVE", "FRONT", "WEEK", "GAVE", "GREEN", "QUICK",
-    "OCEAN", "WARM", "FREE", "MIND", "CLEAR", "STREET", "STAY", "WHEEL", "FULL",
-    "FORCE", "BLUE", "DEEP", "MOON", "FOOT", "TEST", "BOAT", "GOLD", "PLANE",
-    "GAME", "HEAT", "SNOW", "EAST", "SECRET", "ORACLE", "RIDDLE", "CIPHER",
-    "TEMPLE", "SYMBOL", "DREAM", "TRUTH", "SPIRIT", "WISDOM", "VISION", "SHADOW",
-    "FLOWER", "PLANET"
+    "MUSIC", "BOTH", "MARK", "OFTEN", "LETTER", "MILE", "RIVER", "FEET", "CARE",
+    "BOOK", "RAIN", "ROOM", "FRIEND", "IDEA", "FISH", "STOP", "BASE", "HEAR",
+    "HORSE", "SURE", "WATCH", "COLOR", "FACE", "WOOD", "MAIN", "GIRL", "YOUNG",
+    "READY", "ABOVE", "EVER", "LIST", "FEEL", "TALK", "BIRD", "SOON", "BODY",
+    "FAMILY", "DIRECT", "LEAVE", "SONG", "DOOR", "BLACK", "SHORT", "CLASS", "WIND",
+    "SHIP", "AREA", "HALF", "ROCK", "ORDER", "FIRE", "SOUTH", "PIECE", "TOLD",
+    "PASS", "SINCE", "WHOLE", "KING", "SPACE", "HEARD", "BEST", "HOUR", "TRUE",
+    "FIVE", "STEP", "EARLY", "HOLD", "WEST", "GROUND", "REACH", "FAST", "SING",
+    "LISTEN", "TABLE", "TRAVEL", "LESS", "SIMPLE", "CENTER", "LOVE", "PERSON",
+    "MONEY", "SERVE", "ROAD", "RULE", "PULL", "COLD", "VOICE", "POWER", "TOWN",
+    "FINE", "FALL", "LEAD", "DARK", "WAIT", "PLAN", "STAR", "REST", "ABLE",
+    "DONE", "DRIVE", "FRONT", "WEEK", "GAVE", "GREEN", "QUICK", "OCEAN", "WARM",
+    "FREE", "MIND", "CLEAR", "STREET", "STAY", "WHEEL", "FULL", "FORCE", "BLUE",
+    "DEEP", "MOON", "FOOT", "TEST", "BOAT", "GOLD", "PLANE", "GAME", "HEAT",
+    "SNOW", "EAST", "SECRET", "ORACLE", "RIDDLE", "CIPHER", "TEMPLE", "SYMBOL",
+    "DREAM", "TRUTH", "SPIRIT", "WISDOM", "VISION", "SHADOW", "FLOWER", "PLANET"
 }
 
 # --- State ---
 if "offsets" not in st.session_state:
-    target = "ORACLE"
-    st.session_state.offsets = [DEVICE_ALPHA.index(c) for c in target]
-
-if "free_spin" not in st.session_state:
-    st.session_state.free_spin = False
+    st.session_state.offsets = [DEVICE_ALPHA.index(c) for c in "ORACLE"]
 
 def rotate_ring(i, step):
     st.session_state.offsets[i] = (st.session_state.offsets[i] + step) % 26
@@ -81,33 +74,33 @@ st.markdown("""
 .cylinder-box {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    background: #18191c;
-    border: 3px solid #b8860b;
+    gap: 6px;
+    background: #151619;
+    border: 3px solid #d4af37;
     border-radius: 12px;
-    padding: 16px 8px;
-    margin: 15px 0;
+    padding: 14px 6px;
+    margin: 10px 0;
 }
 .ring-col {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: #23252a;
-    border: 1px solid #554422;
+    background: #222429;
+    border: 1px solid #44351a;
     border-radius: 6px;
-    width: 48px;
+    width: 46px;
 }
-.char-faint { font-size: 16px; color: #666; height: 26px; line-height: 26px; }
-.char-mid { font-size: 20px; color: #aaa; height: 30px; line-height: 30px; }
+.char-faint { font-size: 14px; color: #555; height: 24px; line-height: 24px; }
+.char-mid { font-size: 18px; color: #999; height: 28px; line-height: 28px; }
 .char-target {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 900;
     color: #fff;
     background: linear-gradient(180deg, #d4af37, #8b6508);
     width: 100%;
     text-align: center;
-    height: 44px;
-    line-height: 44px;
+    height: 42px;
+    line-height: 42px;
     border-top: 2px solid #ffd700;
     border-bottom: 2px solid #ffd700;
 }
@@ -151,30 +144,24 @@ for i, col in enumerate(btn_cols):
 
 st.write("---")
 
-# --- Modes & Controls ---
+# --- Controls ---
 c1, c2 = st.columns(2)
 with c1:
     st.subheader("🎲 Spin Controls")
     if st.button("🎲 Random Spin", use_container_width=True, type="primary"):
         st.session_state.offsets = [random.randint(0, 25) for _ in range(6)]
         st.rerun()
-    
-    spin_label = "🛑 Stop Free Spin" if st.session_state.free_spin else "⚡ Start Free Spin"
-    if st.button(spin_label, use_container_width=True):
-        st.session_state.free_spin = not st.session_state.free_spin
-        st.rerun()
-        
-    if st.session_state.free_spin:
+    if st.button("⚡ Quick Re-Spin", use_container_width=True):
         st.session_state.offsets = [random.randint(0, 25) for _ in range(6)]
-        time.sleep(0.4)
         st.rerun()
 
 with c2:
     st.subheader("🎯 Align Word")
-    user_input = st.text_input("Enter 1-6 Letters", max_chars=6).strip().upper()
-    if st.button("Set Cylinder Word", use_container_width=True):
-        if user_input.isalpha():
-            for i, char in enumerate(user_input[:6]):
+    user_input = st.text_input("Enter up to 6 letters", max_chars=6).strip().upper()
+    if st.button("Set Word", use_container_width=True):
+        clean = "".join(c for c in user_input if c in DEVICE_ALPHA)
+        if clean:
+            for i, char in enumerate(clean[:6]):
                 st.session_state.offsets[i] = DEVICE_ALPHA.index(char)
             st.rerun()
 
@@ -185,10 +172,9 @@ while total_num > 9:
     total_num = sum(int(d) for d in str(total_num))
 
 st.write("---")
-st.subheader(f"📜 Cylinder Reading for **{center_word}**")
+st.subheader(f"📜 Reading: **{center_word}**")
 st.write(f"**Pythagorean Vibration {total_num}:** {NUMEROLOGY_THEMES.get(total_num, '')}")
 
-# Scan all 26 rows
 found_rows = []
 for shift in range(26):
     row_chars = "".join(DEVICE_ALPHA[(st.session_state.offsets[i] + shift) % 26] for i in range(6))
@@ -202,9 +188,9 @@ for shift in range(26):
         label = "CENTER (Row 0)" if shift == 0 else f"Row +{shift}"
         found_rows.append((label, row_chars, row_words))
 
-st.markdown("#### Discovered Words Around the Cylinder:")
 if found_rows:
+    st.markdown("#### Words Found Around the Cylinder:")
     for label, row_chars, words in found_rows:
         st.markdown(f"- **{label}:** `{row_chars}` $\\rightarrow$ **{', '.join(words)}**")
 else:
-    st.info("No words detected in this position. Try spinning or rotating!")
+    st.info("No common words found on this row alignment. Try spinning again!")
