@@ -160,7 +160,7 @@ for shift in range(-12, 14):
             highlight_mask[idx] = True
             
     is_center = (shift == 0)
-    label = "🌟 MAIN WORD (Row 0)" if is_center else f"Row {shift:+d}"
+    label = "► MAIN (Row 0)" if is_center else f"  Row {shift:+d}"
     
     word_names = [x[0] for x in found_words]
     if not is_center:
@@ -319,30 +319,36 @@ if unique_words:
         f"**Oracle Interpretation:** {story_text}"
     )
     
-    # --- Build Downloadable Text File ---
+    # --- Build Complete Downloadable Text File (Full Rolled-Out Visual) ---
     file_lines = [
-        "==================================================",
-        "🗝️ CRYPTEX WERD — CYLINDER ORACLE READING",
+        "=" * 78,
+        "🗝️ CRYPTEX WERD — COMPLETE CYLINDER ORACLE READING",
+        "=" * 78,
         f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}",
-        "==================================================",
-        f"MAIN WORD: {main_word}",
-        f"Pythagorean Vibration: Number {total_num} ({num_title})",
-        f"Vibrational Meaning: {num_desc}",
+        f"Main Word: {main_word}",
+        f"Pythagorean Vibration: Number {total_num} — {num_title}",
+        f"Vibrational Theme: {num_desc}",
         "",
-        "--------------------------------------------------",
-        "WORDS DISCOVERED AROUND THE CYLINDER FACE:",
-        "--------------------------------------------------"
+        "=" * 78,
+        "FULL ROLLED-OUT WRITTEN VISUAL MATRIX (ALL 26 ROWS ACROSS CYLINDER)",
+        "=" * 78,
+        f"  {'ROW OFFSET':<14} |  {'RINGS 1 - 6':<13} | WORDS FORMED",
+        "-" * 16 + "+" + "-" * 17 + "+" + "-" * 43
     ]
-    for row in rows_data:
-        if row["words"]:
-            file_lines.append(f"{row['label']:<24} | {' '.join(row['chars'])} -> {', '.join(row['words'])}")
+    for r in rows_data:
+        chars_str = f"[{' '.join(r['chars'])}]" if r['is_center'] else f" {' '.join(r['chars'])} "
+        words_str = f"⭐ {', '.join(r['words'])}" if r['words'] else ""
+        file_lines.append(f"{r['label']:<16} | {chars_str:<15} | {words_str}")
+        
     file_lines.extend([
+        "=" * 78,
+        "ORACLE INTERPRETATION & READING SYNTHESIS",
+        "=" * 78,
+        f"Main Word Anchor: {main_word}",
+        f"Orbiting Words Discovered: {', '.join(unique_words[:8])}",
         "",
-        "--------------------------------------------------",
-        "ORACLE INTERPRETATION:",
-        "--------------------------------------------------",
         story_text,
-        "=================================================="
+        "=" * 78
     ])
     reading_file_content = "\n".join(file_lines)
     
