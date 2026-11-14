@@ -1,109 +1,107 @@
-# 🗝️ Drew's Cryptex — 6-Ring Cylinder Cipher & Divination App
+# 🗝️ CRYPTE**X** WERD — Drew's 6-Ring Cylinder Cipher & Oracle
 
-A web application that transforms the physical 6-ring cylinder cipher into an interactive digital divination wheel and word-alignment game. Built with [Streamlit](https://streamlit.io/) and ready for one-click deployment on **Streamlit Community Cloud** and **GitHub**.
+A neon, dark-mode web app that recreates Drew's physical 6-ring brass cipher cylinder. Spin or dial the rings, and the app searches the **whole cylinder face** — all 26 rows, forward, backward and diagonally — for hidden words from a vocabulary of about **56,000 words**, then gives a Pythagorean numerology reading.
+
+Built with [Streamlit](https://streamlit.io/).
 
 ---
 
-## 🌟 What is this Device?
+## 🌟 The device
 
-Drew built the original physical mechanical 6-ring brass cipher device shown in the videos. This web application transforms Drew's physical hardware invention into an interactive digital software app (historically originating from Thomas Jefferson's 1795 wheel cipher and the Da Vinci Cryptex), customized with handwritten letter strips taped across each brass ring.
+Drew built the original mechanical cylinder: six brass rings, each wrapped in a hand-lettered strip, in the tradition of Thomas Jefferson's wheel cipher and the Da Vinci cryptex.
 
-The letter sequence on each ring follows the **9-column Pythagorean numerological reduction alphabet**:
+Every ring carries the same 26 letters in the **9-column Pythagorean reduction order** — the alphabet written in nine columns (1–9) and read down each column:
+
 ```
-A J S | B K T | C L U | D M V | E N W | F O X | G P Y | H Q Z | I R
+1 2 3 4 5 6 7 8 9
+A B C D E F G H I
+J K L M N O P Q R
+S T U V W X Y Z
+
+Ring order:  A J S  B K T  C L U  D M V  E N W  F O X  G P Y  H Q Z  I R
 ```
-- Total letters: exactly 26 letters per ring (A through Z transposed by numerical vibration).
-- When a word is dialed into the central reading line, the other 25 parallel rows around the cylinder shift by exact mathematical offsets, generating secondary anagrams, hidden words, and poetic "readings."
+
+When a word is dialed onto the main row, the other 25 rows around the cylinder line up in fixed offsets, and hidden words appear across them.
 
 ---
 
 ## ✨ Features
 
-- **Antique Brass 3D Cylinder Visualizer:** Skeuomorphic display showing all 6 rings with depth shading, curved perspective, and glowing golden target pointers (`▶ [WORD] ◀`).
-- **Manual Dial Controls:** Independent `▲` (step up) and `▼` (step down) buttons for each of the 6 rings to dial letters by hand.
-- **Random Spin & Free Spin:** 
-  - `🎲 Random Spin`: Instant randomized spin of all rings.
-  - `⚡ Free Spin`: Continuous automated rolling mode that spins on its own until you click "Stop Free Spin."
-- **Target Word Alignment:** Type any word (e.g., `SECRET`, `ORACLE`, `NATURE`, `DREAM`) and the cylinder automatically rotates all 6 rings into position.
-- **The Cylinder Reading & Circumference Matrix Scanner:**
-  - Scans all 26 rows across the 360° circumference against a 24,000+ English word dictionary.
-  - Detects words of length 3, 4, 5, and 6 letters.
-  - Generates a **Pythagorean Numerological Vibration** (Numbers 1–9 and Master Numbers 11, 22, 33) and an **Oracle Divination Interpretation** based on the central alignment and surrounding word echoes.
-- **Word Hunt Game:** A puzzle mode challenging you to manipulate the cylinder to maximize discovered words and beat daily quests.
-- **Custom Ring Configuration:** Switch between the **Device's Pythagorean Sequence**, **Standard A–Z**, or input your own custom 26-letter ring sequences.
-- **Reading Log:** Save your favorite cylinder readings with timestamps and export them.
+- **Neon cylinder face** — all 26 rows unrolled, the main row glowing in the middle. Tap any found word to light up its path.
+- **Search in every direction**
+  - ◆ **GIFTS** (mint) — words read *forward*, left → right: → ↘ ↗
+  - ◇ **INTENTS** (magenta) — words read *backward*, right → left: ← ↖ ↙
+  - Optional vertical ↓ ↑ search
+  - The cylinder wraps around, so diagonals continue from the bottom row to the top, just like the real rings.
+- **Huge vocabulary (3–6 letters)** — switch each source on or off:
+  | Source | Words | Default |
+  |---|---|---|
+  | Everyday English | ~9,800 | on |
+  | Mystic, myth, titles & names (Mrs, Sir, Odin, Isis, Tarot, Sigil…) | ~350 | on |
+  | Slang & internet speak (rizz, slay, vibe, bussin, yeet…) | ~270 | on |
+  | Crude & adult slang | ~70 | on |
+  | Full Scrabble dictionary (ENABLE) | ~18,900 | on |
+  | Deep lexicon — rare words, abbreviations, names | ~26,700 | off |
+- **Clean mode** — one switch hides swears and adult words.
+- **Hide nested words** — keeps EAR from cluttering the list when HEART is found (can be turned off).
+- **Ring dials** — ▲ / ▼ for each ring, side by side even on a phone.
+- **Random Spin** and **Align Word** (type up to 6 letters, press Enter).
+- **Oracle reading** — Pythagorean vibration (1–9) of the main word, letter meanings, gifts, intents and a synthesis.
+- **Save & print**
+  - **Text file (.txt)** — every letter in its own fixed-width column, so the grid lines up when printed. Includes the full cylinder, a GIFT map, an INTENT map and tables of every word with its direction, start row and ring.
+  - **Printable page (.html)** — open in a browser and print or Save as PDF; colored, ink-friendly grid.
+  - **Reading log** — save readings during your session and download them as a .txt.
 
 ---
 
-## 🚀 Quick Start (Run Locally)
+## 🚀 Run it on your computer
 
-1. **Clone or download this repository:**
-   ```bash
-   git clone https://github.com/<your-username>/cryptex-oracle.git
-   cd cryptex-oracle
-   ```
+```bash
+git clone https://github.com/RN-Top/Cryptex.git
+cd Cryptex
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-2. **Create a virtual environment (optional but recommended):**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+It opens at `http://localhost:8501`.
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+## ☁️ Deploy free on Streamlit Community Cloud
 
-4. **Launch the Streamlit app:**
-   ```bash
-   streamlit run app.py
-   ```
-   The app will automatically open in your default browser at `http://localhost:8501`.
+1. Go to [share.streamlit.io](https://share.streamlit.io/) and sign in with GitHub.
+2. **New app** → repository `RN-Top/Cryptex`, branch `main`, main file `app.py`.
+3. **Deploy**. The neon theme is set in `.streamlit/config.toml` and loads automatically.
 
 ---
 
-## 📦 How to Push to GitHub
-
-1. **Initialize Git inside your project folder:**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit of Cryptex Oracle app"
-   ```
-
-2. **Create a new repository on GitHub:**
-   - Go to [github.com/new](https://github.com/new).
-   - Name it `cryptex-oracle` (or any name you prefer).
-   - Leave it **Public**.
-
-3. **Link and push your local code:**
-   ```bash
-   git remote add origin https://github.com/<your-username>/cryptex-oracle.git
-   git branch -M main
-   git push -u origin main
-   ```
-
----
-
-## ☁️ How to Deploy Free on Streamlit Community Cloud
-
-1. Go to [share.streamlit.io](https://share.streamlit.io/) and sign in with your GitHub account.
-2. Click **"New app"**.
-3. Select your repository: `<your-username>/cryptex-oracle`.
-4. Branch: `main`.
-5. Main file path: `app.py`.
-6. Click **"Deploy!"**
-Your app will be live on the web with a public URL you can share with anyone!
-
----
-
-## 📁 Repository Structure
+## 📁 Files
 
 ```
-cryptex-oracle/
-├── app.py              # Main Streamlit application
-├── words.txt           # Clean 24,000+ English word dictionary
-├── requirements.txt    # Python dependencies (streamlit>=1.28.0)
-├── .gitignore          # Git ignore rules
-└── README.md           # Documentation & instructions
+Cryptex/
+├── app.py                  # Streamlit interface (neon theme, dials, cylinder face, downloads)
+├── cryptex_core.py         # Word search, readings and printable reports (no Streamlit needed)
+├── lexicon/
+│   ├── common.txt          # Everyday English
+│   ├── mystic.txt          # Mystic, myth, titles & names   ← hand-written, add your own
+│   ├── slang.txt           # Slang & internet speak         ← hand-written, add your own
+│   ├── crude.txt           # Crude & adult slang            ← hand-written, add your own
+│   ├── dictionary.txt      # Full ENABLE Scrabble dictionary
+│   ├── deep.txt            # Rare words, abbreviations & names
+│   └── clean_filter.txt    # Extra words hidden by Clean mode
+├── tools/build_lexicon.py  # Rebuilds the generated word lists from their sources
+├── .streamlit/config.toml  # Dark neon theme
+└── requirements.txt
 ```
+
+**Adding words:** open `lexicon/slang.txt`, `mystic.txt` or `crude.txt` and add one word per line (3–6 letters). Lines starting with `#` are notes and are ignored.
+
+---
+
+## 📚 Word-list credits
+
+- **ENABLE** word list — public domain, via [dolph/dictionary](https://github.com/dolph/dictionary)
+- **popular.txt** (common-word subset of ENABLE + Wiktionary frequency lists) — [dolph/dictionary](https://github.com/dolph/dictionary)
+- **english-words** — public domain (Unlicense), [dwyl/english-words](https://github.com/dwyl/english-words)
+- Clean-mode list derived from [first20hours/google-10000-english](https://github.com/first20hours/google-10000-english)
+- Slang, mystic and crude lists written for this project
+
+Original device: **Drew**. App: **Erin Rae Toppe** ([RN-Top](https://github.com/RN-Top)).
