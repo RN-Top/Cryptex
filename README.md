@@ -28,6 +28,7 @@ When a word is dialed onto the main row, the other 25 rows around the cylinder l
 ## ✨ Features
 
 - **Neon cylinder face** — all 26 rows unrolled, the main row glowing in the middle. Tap any found word to light up its path.
+- **Only your word's rings are read** — a 4-letter word uses rings 1–4; rings 5–6 are dimmed and switched off, so FEEL and FEELIN give different readings.
 - **Search in every direction**
   - ◆ **GIFTS** (mint) — words read *forward*, left → right: → ↘ ↗
   - ◇ **INTENTS** (magenta) — words read *backward*, right → left: ← ↖ ↙
