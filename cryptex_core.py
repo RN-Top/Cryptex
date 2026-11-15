@@ -1,0 +1,347 @@
+"""Core logic for Cryptex werd — no Streamlit imports, so it can be tested on its own.
+
+The cylinder is a grid of 26 rows (wrapping around, like the real brass cylinder)
+by 6 rings (columns, which do NOT wrap). Words are searched in every direction:
+
+  GIFT   (forward,  read left -> right):  RIGHT, DOWN-RIGHT, UP-RIGHT   (+ DOWN if vertical is on)
+  INTENT (backward, read right -> left):  LEFT,  UP-LEFT,    DOWN-LEFT  (+ UP   if vertical is on)
+"""
+import html
+import os
+import re
+import time
+import unicodedata
+
+# Drew's 26-letter Pythagorean reduction alphabet (9 columns read down: A J S / B K T / ...)
+DEVICE_ALPHA = "AJSBKTCLUDMVENWFOXGPYHQZIR"
+RINGS = 6
+ROWS = 26
+CENTER = 12  # grid row index of the main row; displayed rows run -12 .. +13
+
+PYTHAGOREAN_VALUES = {
+    'A': 1, 'J': 1, 'S': 1, 'B': 2, 'K': 2, 'T': 2, 'C': 3, 'L': 3, 'U': 3,
+    'D': 4, 'M': 4, 'V': 4, 'E': 5, 'N': 5, 'W': 5, 'F': 6, 'O': 6, 'X': 6,
+    'G': 7, 'P': 7, 'Y': 7, 'H': 8, 'Q': 8, 'Z': 8, 'I': 9, 'R': 9
+}
+
+LETTER_MEANINGS = {
+    'A': "Initiative & Origin", 'B': "Harmony & Cooperation", 'C': "Creative Spark",
+    'D': "Foundation & Tenacity", 'E': "Freedom & Catalyst", 'F': "Nurturing Heart",
+    'G': "Spiritual Intellect", 'H': "Power & Manifestation", 'I': "Universal Compassion",
+    'J': "Bold Leadership", 'K': "Intuitive Insight", 'L': "Expressive Grace",
+    'M': "Work & Stability", 'N': "Curiosity & Flow", 'O': "Protective Devotion",
+    'P': "Philosophical Depth", 'Q': "Original Authority", 'R': "Mastery & Wisdom",
+    'S': "Dynamic Will", 'T': "Peace & Patience", 'U': "Receptive Abundance",
+    'V': "Architectural Vision", 'W': "Adaptive Transformation", 'X': "Mystery & Transition",
+    'Y': "Intuitive Independence", 'Z': "Spiritual Endurance"
+}
+
+NUMEROLOGY_THEMES = {
+    1: ("The Pioneer", "New beginnings, bold initiative, independence, and raw potential.", "Step forward fearlessly. A fresh cycle is initiating, urging you to trust your individual vision and lead without hesitation."),
+    2: ("The Mirror", "Partnership, balance, intuition, and diplomatic harmony.", "Seek balance over force. Listen closely to subtle intuitions and cultivate harmony within partnerships and quiet spaces."),
+    3: ("The Spark", "Creative expansion, joyous self-expression, and communication.", "Your voice and creativity hold power right now. Release self-doubt, express your truth authentically, and embrace lighthearted joy."),
+    4: ("The Anchor", "Stability, discipline, grounded structure, and order.", "Build steadily upon solid foundations. Focus on patience, practical habits, and grounding your ideas into tangible reality."),
+    5: ("The Catalyst", "Freedom, dynamic movement, curiosity, and transformation.", "Embrace unexpected shifts and welcome adventure. The winds of change are clearing away stagnant energy to expand your horizons."),
+    6: ("The Guardian", "Nurturing love, protective balance, and community healing.", "Tend to the heart and home. Offer compassion to those you care for, while upholding healthy personal boundaries."),
+    7: ("The Mystic", "Deep introspection, analytical truth, and spiritual search.", "Withdraw into quiet contemplation. The answers you seek cannot be found in outward noise - trust deep reflection and inner wisdom."),
+    8: ("The Crown", "Manifestation, power, material mastery, and ambition.", "Step into your personal authority. Karma and material equilibrium support purposeful efforts to manifest lasting impact."),
+    9: ("The Sage", "Universal wisdom, culmination, compassion, and completion.", "A cycle is completing. Release what no longer serves your growth, forgive past chapters, and step into higher perspective.")
+}
+
+# ---------------------------------------------------------------- lexicon
+# (key, file, label, on by default, rank for readings: lower = more meaningful)
+TIERS = [
+    ("common", "common.txt", "Everyday English", True, 0),
+    ("mystic", "mystic.txt", "Mystic, myth, titles & names", True, 0),
+    ("slang", "slang.txt", "Slang & internet speak", True, 1),
+    ("crude", "crude.txt", "Crude & adult slang", True, 1),
+    ("dictionary", "dictionary.txt", "Full Scrabble dictionary", True, 2),
+    ("deep", "deep.txt", "Deep lexicon (rare words, abbreviations, names)", False, 3),
+]
+TIER_LABEL = {t[0]: t[2] for t in TIERS}
+TIER_RANK = {t[0]: t[4] for t in TIERS}
+LEXICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lexicon")
+_WORD = re.compile(r"[A-Z]{3,6}")
+
+
+def read_wordfile(path):
+    words = set()
+    if not os.path.exists(path):
+        return words
+    with open(path, encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            w = line.strip().upper()
+            if w and not w.startswith("#") and _WORD.fullmatch(w):
+                words.add(w)
+    return words
+
+
+def load_tiers(lexicon_dir=LEXICON_DIR):
+    """Return {tier_key: set(words)} plus the Clean-mode filter set."""
+    tiers = {key: read_wordfile(os.path.join(lexicon_dir, fname)) for key, fname, *_ in TIERS}
+    clean_filter = read_wordfile(os.path.join(lexicon_dir, "clean_filter.txt")) | tiers["crude"]
+    return tiers, clean_filter
+
+
+def build_lookup(tiers, clean_filter, enabled, clean_mode=False):
+    """Map WORD -> tier key, for the enabled tiers. Earlier tiers in TIERS win."""
+    lookup = {}
+    for key, *_ in reversed(TIERS):  # reversed so earlier tiers overwrite later ones
+        if key in enabled:
+            for w in tiers.get(key, ()):
+                lookup[w] = key
+    if clean_mode:
+        for w in clean_filter:
+            lookup.pop(w, None)
+    return lookup
+
+
+# ---------------------------------------------------------------- cylinder
+def build_grid(offsets):
+    """26 x 6 list of letters. Row CENTER is the main row."""
+    return [[DEVICE_ALPHA[(offsets[c] + r - CENTER) % 26] for c in range(RINGS)] for r in range(ROWS)]
+
+
+def row_label(r):
+    s = r - CENTER
+    return "MAIN" if s == 0 else f"{s:+d}"
+
+
+# (name, arrow, d_row, d_col, kind)
+DIRECTIONS = [
+    ("RIGHT", "→", 0, 1, "gift"),
+    ("DOWN-RIGHT", "↘", 1, 1, "gift"),
+    ("UP-RIGHT", "↗", -1, 1, "gift"),
+    ("LEFT", "←", 0, -1, "intent"),
+    ("UP-LEFT", "↖", -1, -1, "intent"),
+    ("DOWN-LEFT", "↙", 1, -1, "intent"),
+]
+VERTICAL = [
+    ("DOWN", "↓", 1, 0, "gift"),
+    ("UP", "↑", -1, 0, "intent"),
+]
+
+
+def find_words(grid, lookup, min_len=3, horizontal=True, diagonal=True, vertical=False, hide_nested=True):
+    """Return a list of occurrences: dict(word, tier, kind, dir, arrow, cells=[(r,c),...])."""
+    dirs = []
+    for d in DIRECTIONS:
+        if (d[2] == 0 and horizontal) or (d[2] != 0 and diagonal):
+            dirs.append(d)
+    if vertical:
+        dirs.extend(VERTICAL)
+
+    found, seen = [], set()
+    for r in range(ROWS):
+        for c in range(RINGS):
+            for name, arrow, dr, dc, kind in dirs:
+                for length in range(max(3, min_len), RINGS + 1):
+                    end_c = c + dc * (length - 1)
+                    if not 0 <= end_c < RINGS:
+                        break
+                    cells = tuple(((r + dr * k) % ROWS, c + dc * k) for k in range(length))
+                    word = "".join(grid[rr][cc] for rr, cc in cells)
+                    tier = lookup.get(word)
+                    if not tier:
+                        continue
+                    key = (word, frozenset(cells))  # palindromes: keep only one reading
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    found.append({"word": word, "tier": tier, "kind": kind, "dir": name,
+                                  "arrow": arrow, "cells": list(cells)})
+
+    if hide_nested:
+        sets = [set(o["cells"]) for o in found]
+        keep = []
+        for i, o in enumerate(found):
+            if not any(len(sets[j]) > len(sets[i]) and sets[i] < sets[j] for j in range(len(found))):
+                keep.append(o)
+        found = keep
+    return found
+
+
+def rank_key(word, tier):
+    return (TIER_RANK.get(tier, 9), -len(word), word)
+
+
+def group_words(found, kind):
+    """Unique words of one kind, best first: list of (word, tier, [occurrences])."""
+    groups = {}
+    for o in found:
+        if o["kind"] == kind:
+            groups.setdefault(o["word"], []).append(o)
+    out = [(w, occ[0]["tier"], occ) for w, occ in groups.items()]
+    out.sort(key=lambda g: rank_key(g[0], g[1]))
+    return out
+
+
+# ---------------------------------------------------------------- reading
+def numerology(word):
+    total = sum(PYTHAGOREAN_VALUES.get(c, 0) for c in word)
+    while total > 9:
+        total = sum(int(d) for d in str(total))
+    title, desc, guide = NUMEROLOGY_THEMES.get(
+        total, ("The Seeker", "Mysterious potential.", "Follow your intuition and listen to the wisdom of the cylinder."))
+    return total, title, desc, guide
+
+
+def synthesis(main_word, gifts, intents, num_desc):
+    g = [w for w, _, _ in gifts[:6]]
+    i = [w for w, _, _ in intents[:6]]
+    parts = []
+    if g:
+        parts.append(f"The cylinder offers its GIFTS around {main_word}: {', '.join(g)}. "
+                     f"{g[0]} is the strongest gift being handed to you.")
+    if i:
+        parts.append(f"Read backward, it reveals the INTENT moving beneath: {', '.join(i)}. "
+                     f"{i[0]} is the will behind this turn of the rings.")
+    if g and i:
+        parts.append(f"Hold {g[0]} (what is given) together with {i[0]} (what is meant), "
+                     f"and let {main_word} guide you toward {num_desc[0].lower() + num_desc[1:]}")
+    if not parts:
+        parts.append(f"{main_word} stands in solitary focus - no other words echo around it. "
+                     f"Its core archetype speaks alone: {num_desc[0].lower() + num_desc[1:]}")
+    return " ".join(parts)
+
+
+# ---------------------------------------------------------------- printable text file
+def _ascii(s):
+    s = s.replace("—", "-").replace("–", "-").replace("’", "'").replace("•", "*")
+    return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
+
+
+def _wrap(text, width=76, indent="  "):
+    words, lines, cur = _ascii(text).split(), [], ""
+    for w in words:
+        if len(cur) + len(w) + 1 > width:
+            lines.append(indent + cur)
+            cur = w
+        else:
+            cur = f"{cur} {w}".strip()
+    if cur:
+        lines.append(indent + cur)
+    return lines
+
+
+def _grid_lines(grid, active_len, show=None):
+    """Fixed-width grid. Every letter sits in its own 3-character column."""
+    lines = ["   ROW    |  1  2  3  4  5  6  |",
+             "  --------+--------------------+"]
+    for r in range(ROWS):
+        lab = row_label(r)
+        lab = ">> MAIN" if lab == "MAIN" else lab
+        cells = ""
+        for c in range(RINGS):
+            ch = grid[r][c]
+            if show is not None and (r, c) not in show:
+                ch = "."
+            elif r == CENTER and c >= active_len and show is None:
+                ch = ch.lower()
+            cells += f"  {ch}"
+        lines.append(f"  {lab:>7} |{cells}  |")
+    return lines
+
+
+def build_text_report(main_word, active_len, grid, found, gifts, intents, num, settings):
+    total, title, desc, guide = num
+    W = 78
+    bar, thin = "=" * W, "-" * W
+    gift_cells = {cell for o in found if o["kind"] == "gift" for cell in o["cells"]}
+    intent_cells = {cell for o in found if o["kind"] == "intent" for cell in o["cells"]}
+
+    L = [bar, "  CRYPTEX WERD  -  CYLINDER ORACLE READING", bar,
+         f"  Timestamp      : {time.strftime('%Y-%m-%d %H:%M:%S')}",
+         f"  Main word      : {main_word}  ({active_len} letters)",
+         f"  Vibration      : {total} - {title}",
+         f"  Search         : {_ascii(settings)}",
+         "", "  Letter values:"]
+    for c in main_word:
+        L.append(f"    {c} = {PYTHAGOREAN_VALUES.get(c, 0)}   {LETTER_MEANINGS.get(c, '')}")
+    L += ["", "  Essence:"] + _wrap(desc, indent="    ") + ["", "  Guidance:"] + _wrap(guide, indent="    ")
+
+    L += ["", bar, "  1. THE FULL CYLINDER  (26 rows x 6 rings, unrolled)", bar,
+          "  The main row is marked >> MAIN. Lowercase letters on the main row",
+          "  are rings outside the aligned word.", ""]
+    L += _grid_lines(grid, active_len)
+
+    L += ["", bar, "  2. GIFT MAP  (forward words: read left to right)", bar,
+          "  Only letters that belong to a GIFT word are shown.", ""]
+    L += _grid_lines(grid, active_len, show=gift_cells)
+
+    L += ["", bar, "  3. INTENT MAP  (backward words: read right to left)", bar,
+          "  Only letters that belong to an INTENT word are shown.", ""]
+    L += _grid_lines(grid, active_len, show=intent_cells)
+
+    def word_table(groups, heading):
+        out = ["", bar, heading, bar]
+        if not groups:
+            return out + ["  (none found)"]
+        out.append(f"  {'WORD':<8}{'DIRECTION':<12}{'START ROW':<11}{'RING':<6}{'SOURCE'}")
+        out.append("  " + "-" * 74)
+        for w, tier, occ in groups:
+            for o in occ:
+                r0, c0 = o["cells"][0]
+                out.append(f"  {w:<8}{o['dir']:<12}{row_label(r0):<11}{c0 + 1:<6}{_ascii(TIER_LABEL.get(tier, tier))}")
+        return out
+
+    L += word_table(gifts, f"  4. GIFTS - {len(gifts)} forward word(s)")
+    L += word_table(intents, f"  5. INTENTS - {len(intents)} backward word(s)")
+
+    L += ["", bar, "  6. CIRCUMFERENCE SYNTHESIS", bar]
+    L += _wrap(synthesis(main_word, gifts, intents, desc))
+    L += [bar, ""]
+    return "\n".join(_ascii(x) for x in L)
+
+
+# ---------------------------------------------------------------- printable HTML page
+def build_print_html(main_word, active_len, grid, found, gifts, intents, num):
+    total, title, desc, guide = num
+    gift_cells = {cell for o in found if o["kind"] == "gift" for cell in o["cells"]}
+    intent_cells = {cell for o in found if o["kind"] == "intent" for cell in o["cells"]}
+    rows = []
+    for r in range(ROWS):
+        tds = ""
+        for c in range(RINGS):
+            cls = []
+            if (r, c) in gift_cells:
+                cls.append("g")
+            if (r, c) in intent_cells:
+                cls.append("i")
+            if r == CENTER:
+                cls.append("m" if c < active_len else "mo")
+            tds += f'<td class="{" ".join(cls)}">{grid[r][c]}</td>'
+        lab = row_label(r)
+        rows.append(f'<tr><th>{"&#9658; MAIN" if lab == "MAIN" else lab}</th>{tds}</tr>')
+
+    def tbl(groups):
+        if not groups:
+            return "<p><i>None found.</i></p>"
+        trs = "".join(
+            f"<tr><td><b>{w}</b></td><td>{o['arrow']} {o['dir']}</td><td>{row_label(o['cells'][0][0])}</td>"
+            f"<td>{o['cells'][0][1] + 1}</td><td>{html.escape(TIER_LABEL.get(t, t))}</td></tr>"
+            for w, t, occ in groups for o in occ)
+        return f"<table class='list'><tr><th>Word</th><th>Direction</th><th>Start row</th><th>Ring</th><th>Source</th></tr>{trs}</table>"
+
+    return f"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cryptex werd - {main_word}</title>
+<style>
+body{{font-family:Helvetica,Arial,sans-serif;color:#111;max-width:760px;margin:24px auto;padding:0 16px}}
+h1{{letter-spacing:4px;margin:0}} h1 .x{{font-size:1.6em;color:#00a37a}}
+.grid{{border-collapse:collapse;margin:12px 0}}
+.grid td{{width:34px;height:34px;text-align:center;font:700 20px "Courier New",monospace;border:1px solid #bbb}}
+.grid th{{font:600 12px monospace;padding-right:8px;text-align:right;color:#555}}
+.grid td.g{{background:#c8f7e6}} .grid td.i{{background:#f7c8ee}} .grid td.g.i{{background:linear-gradient(135deg,#c8f7e6 50%,#f7c8ee 50%)}}
+.grid td.m{{outline:3px solid #000;outline-offset:-3px}} .grid td.mo{{color:#999}}
+.list{{border-collapse:collapse;width:100%;font-size:13px}} .list td,.list th{{border-bottom:1px solid #ddd;padding:3px 6px;text-align:left}}
+.key span{{display:inline-block;padding:2px 8px;margin-right:6px;border:1px solid #999}}
+@media print{{ .grid td{{-webkit-print-color-adjust:exact;print-color-adjust:exact}} }}
+</style></head><body>
+<h1>CRYPTE<span class="x">X</span> WERD</h1>
+<p><b>Main word:</b> {main_word} &nbsp; <b>Vibration:</b> {total} - {title}<br><small>{time.strftime('%Y-%m-%d %H:%M:%S')}</small></p>
+<p class="key"><span style="background:#c8f7e6">GIFT &mdash; forward</span><span style="background:#f7c8ee">INTENT &mdash; backward</span><span style="outline:3px solid #000">Main row</span></p>
+<table class="grid">{''.join(rows)}</table>
+<h2>Gifts ({len(gifts)})</h2>{tbl(gifts)}
+<h2>Intents ({len(intents)})</h2>{tbl(intents)}
+<h2>Reading</h2><p><b>{title}:</b> {html.escape(desc)}</p><p>{html.escape(guide)}</p>
+<p>{html.escape(synthesis(main_word, gifts, intents, desc))}</p>
+</body></html>"""
