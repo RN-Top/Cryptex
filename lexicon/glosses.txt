@@ -1,0 +1,902 @@
+# Hand-written meanings for slang, mystic, titles, names and crude words.
+# Format:  WORD | part of speech | meaning
+# These override the general dictionary. Add your own the same way.
+LIT | slang | amazing, exciting, full of energy ("the party was lit"); also: drunk or high
+MINT | slang | excellent, perfect, in flawless condition
+SLAY | slang | to do something extremely well; to look amazing ("you slayed")
+SLAYED | slang | did something extremely well; looked amazing
+VIBE | slang | the feeling or energy of a person, place or moment; to get along ("we vibe")
+VIBES | slang | the overall feeling or energy something gives off
+VIBIN | slang | relaxing and enjoying the moment; getting along well
+DOPE | slang | cool, excellent (also old slang for drugs, or a foolish person)
+RIZZ | slang | charm, the ability to attract someone (from "charisma")
+BET | slang | "okay, deal, for sure" — agreement or acceptance
+CAP | slang | a lie ("that's cap" = that's a lie)
+NOCAP | slang | "no lie, for real" — said to show you're being honest
+SUS | slang | suspicious, shady, not to be trusted
+YEET | slang | to throw something hard; a shout of excitement
+FAM | slang | family; your close friends
+BRUH | slang | "bro" — said in disbelief or disappointment
+BRO | slang | brother; a close male friend
+BROS | slang | brothers; close friends
+BAE | slang | your sweetheart ("before anyone else")
+GOAT | slang | Greatest Of All Time
+DRIP | slang | stylish clothes and accessories; swagger
+DRIPPY | slang | very stylish, fashionable
+FLEX | slang | to show off
+LOWKEY | slang | quietly, secretly, a little bit ("I lowkey love it")
+SALTY | slang | bitter, upset or annoyed, especially after losing
+SHADE | slang | a subtle insult or disrespect ("throwing shade")
+SHADY | slang | untrustworthy, suspicious
+TEA | slang | gossip, the juicy truth ("spill the tea")
+WOKE | slang | aware of social injustice (originally: staying alert to the truth)
+STAN | slang | a super-fan; to support someone intensely
+STANS | slang | super-fans
+SIMP | slang | someone who tries too hard for a person they like
+GLOWUP | slang | a big positive transformation in looks or life
+BUSSIN | slang | really good, delicious
+BASED | slang | being yourself without caring what others think
+MID | slang | mediocre, just average
+OPP | slang | an opponent or enemy
+OPPS | slang | opponents, enemies, rivals
+EXTRA | slang | over the top, dramatic, too much
+BOUJEE | slang | fancy, high-class, a bit snobby (from "bourgeois")
+BOUGIE | slang | fancy, high-class, a bit snobby (from "bourgeois")
+SKRT | slang | the sound of tires screeching; leaving fast
+PERIOD | slang | "end of discussion, that's final"
+ICONIC | slang | legendary, unforgettable
+FOMO | slang | Fear Of Missing Out
+YOLO | slang | You Only Live Once — take the chance
+OMG | slang | Oh My God
+LOL | slang | Laughing Out Loud
+LMAO | slang | Laughing My Ass Off
+SMH | slang | Shaking My Head — disappointment
+TBH | slang | To Be Honest
+IDK | slang | I Don't Know
+IMO | slang | In My Opinion
+IMHO | slang | In My Humble (or Honest) Opinion
+BFF | slang | Best Friend Forever
+BFFS | slang | Best Friends Forever
+GHOST | slang | to suddenly stop answering someone with no explanation; also a spirit of the dead
+GHOSTS | slang | spirits of the dead; people who vanished on you
+GLOW | slang | to look radiant and healthy; inner light
+HYPE | slang | excitement, buzz; to get someone excited
+HYPED | slang | very excited
+CHILL | slang | relaxed, easygoing; to hang out
+LEGIT | slang | real, genuine, legitimate
+SWAG | slang | confidence and style
+SWOLE | slang | very muscular
+THICC | slang | curvy, full-figured (a compliment)
+SICK | slang | awesome, impressive
+RAD | slang | excellent, cool (from "radical")
+GNARLY | slang | extreme — either awesome or gross
+DUDE | slang | a guy; any friend
+DAWG | slang | a close friend, a buddy
+HOMIE | slang | a close friend from your neighborhood
+HOMIES | slang | close friends
+BESTIE | slang | best friend
+SIS | slang | sister; a close female friend
+KWEEN | slang | a woman who is fabulous ("queen")
+CRINGE | slang | embarrassing, awkward to watch
+BOP | slang | a catchy, upbeat song
+BANGER | slang | a great song everyone loves
+JAM | slang | a favorite song; to play music
+SLAPS | slang | is really good (usually music: "this song slaps")
+BAG | slang | money ("secure the bag")
+BREAD | slang | money
+GUAP | slang | a lot of money
+MOOLA | slang | money
+DOUGH | slang | money
+CHEUGY | slang | out of date, trying too hard to be trendy
+YAS | slang | an enthusiastic "yes!"
+YASS | slang | an enthusiastic "yes!"
+YASSS | slang | an extra-enthusiastic "yes!"
+YAAS | slang | an enthusiastic "yes!"
+FINNA | slang | "fixing to" — about to do something
+GONNA | slang | going to
+WANNA | slang | want to
+GOTTA | slang | got to, have to
+KINDA | slang | kind of, somewhat
+SORTA | slang | sort of, somewhat
+AINT | slang | is not / are not / have not
+YALL | slang | you all
+NAH | slang | no
+NOPE | slang | no
+YEP | slang | yes
+YUP | slang | yes
+SUP | slang | "what's up?" — hello
+WASSUP | slang | "what's up?" — hello
+HOLLA | slang | to call or shout out to someone; "hit me up"
+GUCCI | slang | good, fine, all right ("we're gucci")
+BOMB | slang | amazing ("the food was the bomb"); to fail badly
+PHAT | slang | excellent, cool (90s)
+FLY | slang | stylish, attractive
+TIGHT | slang | cool; close friends ("we're tight")
+FRESH | slang | new and stylish; also: rude, cheeky
+WACK | slang | bad, lame, not cool
+WHACK | slang | bad, lame; also to hit hard
+BOGUS | slang | fake, unfair, bad
+PSYCH | slang | "just kidding!"
+GROOVY | slang | cool, wonderful (60s–70s)
+HEP | slang | old slang for "hip," in the know
+SQUAD | slang | your group of friends
+CREW | slang | your group of friends
+POSSE | slang | your group of friends or followers
+GAG | slang | something shocking in a good way ("I'm gagged"); a joke
+CHAD | slang | a confident, attractive, popular man (stereotype)
+NPC | slang | "non-player character" — someone who acts without thinking for themselves
+IRL | slang | In Real Life
+FTW | slang | For The Win
+OTP | slang | One True Pairing — your favorite couple
+EMO | slang | emotional; a music style and subculture
+GOTH | slang | a dark-fashion subculture
+NERD | slang | someone very into learning or a hobby
+GEEK | slang | an enthusiast or expert in a topic
+DORK | slang | an awkward, goofy person
+NOOB | slang | a beginner (newbie)
+NEWB | slang | a beginner (newbie)
+PWNED | slang | totally defeated (gaming)
+PWN | slang | to totally defeat someone (gaming)
+LEET | slang | elite, skilled (hacker talk)
+MEME | slang | a funny idea, image or video that spreads online
+MEMES | slang | funny ideas, images or videos that spread online
+EMOJI | slang | a small picture used in texting
+SELFIE | slang | a photo of yourself
+TWEET | slang | a post on Twitter/X; a bird's chirp
+VLOG | slang | a video blog
+BLOG | slang | an online journal
+MOOD | slang | "same, that's exactly how I feel"
+SHEESH | slang | an expression of amazement
+DELULU | slang | delusional, living in a fantasy
+AURA | slang | the energy or coolness someone gives off ("+100 aura"); a spiritual field of light
+MEWING | slang | a jaw-posture trend (tongue pressed to the roof of the mouth)
+SIGMA | slang | a self-reliant, independent "lone wolf"; Greek letter
+ALPHA | slang | a dominant leader; first Greek letter
+OHIO | slang | weird or cursed (internet joke); also the US state
+GRIND | slang | hard, steady work toward a goal
+HUSTLE | slang | to work hard and smart; a scheme
+BAGGED | slang | got it, won it, secured it
+CLUTCH | slang | coming through at the critical moment
+CLOUT | slang | influence, fame, social status
+STEEZ | slang | effortless style ("style with ease")
+SAUCE | slang | style, swagger, confidence
+SAUCY | slang | bold, flirty, cheeky
+SNACK | slang | an attractive person
+SNATCH | slang | snatched = looking flawless; also to grab (also vulgar slang)
+CHEF | slang | "chef's kiss" — perfect
+BOSS | slang | a confident person in charge; excellent
+GOALS | slang | something to aspire to ("relationship goals")
+TOXIC | slang | harmful, draining (a person or relationship)
+FLOP | slang | a failure
+FLOPS | slang | failures
+RATIO | slang | when a reply gets more likes than the original post — a public "loss"
+SPILL | slang | to tell the gossip ("spill the tea")
+SLEPT | slang | "slept on" = overlooked, underrated
+SHOOK | slang | shocked, rattled
+SHOOKT | slang | very shocked
+FIERCE | slang | bold, powerful, fabulous
+WERK | slang | "work it!" — encouragement
+WERD | slang | "word" — true, I agree
+WORD | slang | "true, I agree"; also a unit of language
+DEAD | slang | "I'm dead" = that's hilarious
+PEEPS | slang | people, friends
+FOLKS | slang | people; your parents
+BUDDY | slang | a friend
+BUDS | slang | friends; also flower buds or cannabis
+CHUM | slang | a friend
+PAL | slang | a friend
+PALS | slang | friends
+MATE | slang | a friend (British/Australian); a partner
+MATES | slang | friends
+BLOKE | slang | a man, a guy (British)
+BOYO | slang | a boy or man (Welsh/Irish)
+LASS | slang | a girl or young woman (Scottish/Irish)
+LADDIE | slang | a boy or young man (Scottish)
+GURL | slang | girl — said with affection
+GRRL | slang | a strong, independent girl ("riot grrl")
+GALS | slang | girls, women
+DUDES | slang | guys, friends
+HUNNY | slang | honey — a term of affection
+HONEY | slang | sweetheart; the sweet food bees make
+BOO | slang | your sweetheart; a sound to scare or jeer
+BOOS | slang | sweethearts; jeers
+BABE | slang | sweetheart; attractive person
+BABES | slang | sweethearts; attractive people
+SWEETS | slang | sweetheart; candy
+SUGA | slang | sugar — a term of affection
+SHAWTY | slang | an attractive young woman
+WIFEY | slang | wife or serious girlfriend
+HUBBY | slang | husband
+KIDDO | slang | a kid — affectionate
+LIL | slang | little
+LILY | slang | a flower symbolizing purity; a name
+BIG | slang | important, popular ("big energy")
+BIGGIE | slang | a big deal ("no biggie")
+OGS | slang | the originals, the veterans ("original gangsters")
+GOATED | slang | the greatest, legendary
+COZY | slang | warm and comfortable
+COMFY | slang | comfortable
+YUMMY | slang | delicious
+YUMS | slang | delicious things
+NOM | slang | the sound of happy eating
+NOMS | slang | food, snacks
+NOMNOM | slang | the sound of happy eating
+TASTY | slang | delicious; attractive
+JELLY | slang | jealous
+JELLO | slang | gelatin dessert; jealous (playful)
+OKAY | slang | all right, fine
+OKIE | slang | okay (cute spelling); also a person from Oklahoma
+KTHX | slang | "okay, thanks"
+THX | slang | thanks
+TYSM | slang | Thank You So Much
+PLZ | slang | please
+PLS | slang | please
+OMW | slang | On My Way
+BRB | slang | Be Right Back
+TTYL | slang | Talk To You Later
+GTG | slang | Got To Go
+AFK | slang | Away From Keyboard
+ICYMI | slang | In Case You Missed It
+NSFW | slang | Not Safe For Work (explicit content)
+TMI | slang | Too Much Information
+FYI | slang | For Your Information
+ASAP | slang | As Soon As Possible
+DIY | slang | Do It Yourself
+TLDR | slang | Too Long; Didn't Read — a summary
+ZEN | slang | calm and at peace; a school of Buddhism focused on meditation
+BOOM | slang | "there it is!"; a loud explosion
+BAM | slang | sudden impact; "just like that!"
+WHAM | slang | a sudden hard hit
+ZOOM | slang | to move very fast
+ZING | slang | a sharp, witty remark; energy
+ZAP | slang | to strike suddenly, as with electricity
+POW | slang | the sound of a punch
+YAY | slang | a cheer of joy
+WOW | slang | amazement
+WOAH | slang | surprise; "slow down"
+WHOA | slang | surprise; "stop, slow down"
+YIKES | slang | alarm or embarrassment
+OOF | slang | sympathy for something painful or awkward
+OOPS | slang | a small mistake
+WHOOPS | slang | a small mistake
+UGH | slang | disgust or annoyance
+MEH | slang | indifference, "whatever"
+HMM | slang | thinking, doubt
+HUH | slang | confusion, surprise
+DUH | slang | "obviously!"
+DOH | slang | "I made a silly mistake" (Homer Simpson)
+EEK | slang | a squeal of fright
+AWW | slang | tenderness, "how sweet"
+# ---------------- mystic, myth & ancient knowledge
+CHAKRA | mystic | one of seven energy centers in the body (Hindu/yogic tradition)
+KARMA | mystic | the law that your actions return to you as consequences
+DHARMA | mystic | your true duty, purpose and right way of living
+TAROT | mystic | a 78-card deck used for divination
+RUNE | mystic | a letter of the ancient Germanic/Norse alphabet, used in magic and divination
+RUNES | mystic | letters of the ancient Norse alphabet, cast for divination
+RUNIC | mystic | written in or relating to runes
+AURA | mystic | a field of light or energy surrounding a person
+AURAS | mystic | fields of light or energy around living beings
+CHI | mystic | life-force energy (Chinese: qi); also the Greek letter X
+MANTRA | mystic | a sacred word or phrase repeated in meditation
+SIGIL | mystic | a magical symbol charged with an intention
+SIGILS | mystic | magical symbols charged with intentions
+ORACLE | mystic | a person or source through which the divine speaks; a prophecy
+OMEN | mystic | a sign of what is to come
+OMENS | mystic | signs of what is to come
+HEX | mystic | a spell or curse; six (Greek "hex")
+HEXES | mystic | spells or curses
+WICCA | mystic | a modern nature-based religion of witchcraft
+WICCAN | mystic | a follower of Wicca
+SAGE | mystic | a wise elder; a herb burned for cleansing
+CRONE | mystic | the wise old woman — third face of the Triple Goddess
+ELIXIR | mystic | a magical potion of life or healing
+ASTRAL | mystic | of the stars; the spirit plane beyond the body
+PRANA | mystic | breath and life-force (Sanskrit)
+YOGA | mystic | "union" — spiritual discipline of body, breath and mind
+LOTUS | mystic | sacred flower of rebirth and enlightenment, rising pure from mud
+ANKH | mystic | Egyptian symbol of eternal life
+OSIRIS | mystic | Egyptian god of the dead, resurrection and the afterlife
+ISIS | mystic | Egyptian mother goddess of magic and healing
+HORUS | mystic | Egyptian falcon-headed sky god, son of Isis and Osiris
+THOTH | mystic | Egyptian ibis-headed god of writing, wisdom and the moon
+ANUBIS | mystic | Egyptian jackal-headed guide of souls
+AMUN | mystic | Egyptian hidden king of the gods
+AMEN | mystic | "so be it" — closing word of prayer; also the Egyptian god Amun
+ATEN | mystic | the sun disk worshipped as the one god in Egypt
+BAST | mystic | Egyptian cat goddess of home, joy and protection
+SETH | mystic | Egyptian god of storms and chaos; third son of Adam
+MAAT | mystic | Egyptian goddess and principle of truth, balance and cosmic order
+NUT | mystic | Egyptian sky goddess arching over the earth; also a seed
+GEB | mystic | Egyptian god of the earth
+ODIN | mystic | Norse All-Father, god of wisdom, runes and death
+THOR | mystic | Norse god of thunder and protection
+LOKI | mystic | Norse trickster god of change
+FREYA | mystic | Norse goddess of love, beauty and magic (seidr)
+FRIGG | mystic | Norse queen of the gods, goddess of foresight and the home
+TYR | mystic | Norse god of law and courage
+ZEUS | mystic | Greek king of the gods, lord of sky and thunder
+HERA | mystic | Greek queen of the gods, goddess of marriage
+APOLLO | mystic | Greek god of light, music, healing and prophecy
+ATHENA | mystic | Greek goddess of wisdom and strategy
+ARES | mystic | Greek god of war
+HADES | mystic | Greek god of the underworld; the underworld itself
+GAIA | mystic | the Earth as a living mother goddess
+NYX | mystic | Greek primordial goddess of night
+EROS | mystic | Greek god of love and desire
+PAN | mystic | Greek wild god of nature, shepherds and music
+HERMES | mystic | Greek messenger god, guide of souls, patron of hidden knowledge
+LUNA | mystic | the Moon (Latin); moon goddess
+SOL | mystic | the Sun (Latin); sun god
+NOVA | mystic | "new" — a star that suddenly blazes bright
+ORION | mystic | the Hunter constellation; Egypt linked it to Osiris
+VEGA | mystic | bright star in Lyra; a future pole star
+SIRIUS | mystic | the brightest star; Egypt's star of Isis and the Nile flood
+ZODIAC | mystic | the 12-sign band of constellations the Sun travels through
+LEO | mystic | the Lion — 5th zodiac sign, ruled by the Sun
+ARIES | mystic | the Ram — 1st zodiac sign, the spring new year
+LIBRA | mystic | the Scales — 7th zodiac sign, balance
+VIRGO | mystic | the Maiden — 6th zodiac sign, harvest and service
+TAURUS | mystic | the Bull — 2nd zodiac sign, earth and endurance
+GEMINI | mystic | the Twins — 3rd zodiac sign, duality and communication
+CANCER | mystic | the Crab — 4th zodiac sign, home and the Moon; also a disease
+PISCES | mystic | the Fishes — 12th zodiac sign, dreams and spirit
+VENUS | mystic | planet and Roman goddess of love and beauty
+MARS | mystic | planet and Roman god of war
+PLUTO | mystic | dwarf planet and Roman god of the underworld; transformation
+SATURN | mystic | planet and Roman god of time, harvest and limits
+URANUS | mystic | planet and Greek primordial sky; sudden change
+COSMOS | mystic | the universe as an ordered whole
+COSMIC | mystic | of the universe; vast
+AEON | mystic | an age of the world; a divine emanation (Gnostic)
+EON | mystic | an immeasurably long age
+AETHER | mystic | the fifth element — pure upper air of the gods
+ETHER | mystic | the heavens; the subtle fifth element
+GNOSIS | mystic | direct, inner knowledge of the divine
+LOGOS | mystic | the divine Word; cosmic reason and order
+SOPHIA | mystic | Wisdom personified as a divine feminine
+NOUS | mystic | the divine mind or intellect
+TAO | mystic | "the Way" — the flowing source of all things (Taoism)
+YIN | mystic | the receptive, dark, feminine force
+YANG | mystic | the active, bright, masculine force
+AUM | mystic | OM — the primordial sound of the universe
+MUDRA | mystic | a sacred hand gesture
+VEDA | mystic | a sacred text of ancient India
+VEDAS | mystic | the four oldest sacred texts of India
+SUTRA | mystic | a thread of teaching; a sacred text
+TANTRA | mystic | a "loom" — esoteric tradition of energy and ritual
+GURU | mystic | a spiritual teacher who removes darkness
+SWAMI | mystic | a Hindu religious teacher
+YOGI | mystic | one who practices yoga
+LAMA | mystic | a Tibetan Buddhist teacher
+MONK | mystic | one who lives apart in prayer and discipline
+SHAMAN | mystic | one who journeys to the spirit world to heal
+DRUID | mystic | Celtic priest, judge and keeper of lore
+DRUIDS | mystic | Celtic priests and keepers of lore
+BARD | mystic | Celtic poet who carried memory and history in song
+OGHAM | mystic | ancient Irish tree alphabet carved in stone
+CELTIC | mystic | of the Celts (Irish, Scottish, Welsh, Breton, etc.)
+ELF | mystic | a magical being of folklore
+ELVES | mystic | magical beings of folklore
+FAE | mystic | the fairy folk
+FAERIE | mystic | the realm of fairies; a fairy
+FAIRY | mystic | a small magical being
+PIXIE | mystic | a mischievous small fairy
+SPRITE | mystic | a spirit of air or water
+GNOME | mystic | an earth spirit that guards treasure
+TROLL | mystic | a giant of Norse folklore; an online provoker
+OGRE | mystic | a man-eating giant
+DRAGON | mystic | a great serpent of fire and power; wisdom and guardianship
+WYRM | mystic | a dragon or serpent (old English)
+WYVERN | mystic | a two-legged winged dragon
+SPHINX | mystic | lion with a human head; guardian of riddles
+GOLEM | mystic | a clay figure brought to life by sacred words
+DJINN | mystic | spirits of smokeless fire (Arabian lore)
+JINN | mystic | spirits of smokeless fire (Arabian lore)
+GENIE | mystic | a wish-granting spirit (from jinn)
+ANGEL | mystic | a messenger of God
+ANGELS | mystic | messengers of God
+SERAPH | mystic | the highest angel, burning with divine love
+DEMON | mystic | an evil spirit; in Greek, a guiding spirit (daimon)
+DEVIL | mystic | the spirit of evil; tempter
+SATAN | mystic | "the adversary" — the devil
+ABYSS | mystic | a bottomless deep; primordial chaos
+EDEN | mystic | the first garden; paradise
+ZION | mystic | the holy hill of Jerusalem; the promised land
+BABEL | mystic | the tower where languages were confused; noisy confusion
+ADAM | mystic | the first man; "of the earth" (Hebrew)
+EVE | mystic | the first woman, "life"; also the night before
+NOAH | mystic | builder of the ark in the great flood
+ABRAM | mystic | Abraham's first name; father of nations
+MOSES | mystic | prophet who led Israel out of Egypt
+ELIJAH | mystic | prophet taken up in a chariot of fire
+JESUS | mystic | central figure of Christianity
+MARY | mystic | mother of Jesus; a name
+CHRIST | mystic | "the anointed one"
+ALLAH | mystic | God (Arabic)
+BUDDHA | mystic | "the awakened one"
+SHIVA | mystic | Hindu god of destruction, renewal and meditation
+VISHNU | mystic | Hindu preserver god
+KALI | mystic | Hindu goddess of time, death and liberation
+GANESH | mystic | elephant-headed Hindu remover of obstacles
+RAMA | mystic | Hindu hero-king, avatar of Vishnu
+SITA | mystic | wife of Rama, goddess of devotion
+INDRA | mystic | Vedic king of the gods, lord of storms
+AGNI | mystic | Vedic god of fire and sacrifice
+SOMA | mystic | sacred drink of the Vedas; the Moon
+INDUS | mystic | the river and ancient civilization of the Indus Valley (Harappa)
+VEDIC | mystic | of the Vedas and early India
+SUMER | mystic | the first civilization of Mesopotamia
+AKKAD | mystic | the ancient Mesopotamian empire after Sumer
+ENKI | mystic | Sumerian god of water, wisdom and craft
+ENLIL | mystic | Sumerian god of wind and authority
+ANU | mystic | Sumerian god of the sky
+INANNA | mystic | Sumerian queen of heaven, love and war
+ISHTAR | mystic | Babylonian goddess of love and war (Inanna)
+MARDUK | mystic | patron god of Babylon
+TIAMAT | mystic | Babylonian primordial sea-dragon of chaos
+MAYA | mystic | illusion (Sanskrit); the Maya people of Central America; a name
+MAYAN | mystic | of the Maya civilization
+AZTEC | mystic | the Mexica civilization of central Mexico
+INCA | mystic | the Andean empire of Peru
+INTI | mystic | the Inca sun god
+CODEX | mystic | an ancient hand-written book
+GLYPH | mystic | a carved symbol or sign
+GLYPHS | mystic | carved symbols or signs
+SCROLL | mystic | a rolled manuscript
+TOME | mystic | a large, weighty book
+GRAIL | mystic | the Holy Grail — the sacred cup; the ultimate quest
+RELIC | mystic | a sacred object from the past
+RELICS | mystic | sacred objects from the past
+AMULET | mystic | a charm worn for protection
+WAND | mystic | a staff that directs magical will
+STAFF | mystic | a walking staff of power; a group of workers
+ORB | mystic | a sphere; a globe of light
+ORBS | mystic | spheres of light
+QUARTZ | mystic | clear crystal that amplifies energy
+JADE | mystic | green stone of harmony and luck; a name
+ONYX | mystic | black stone of protection and strength
+OPAL | mystic | iridescent stone of inspiration
+RUBY | mystic | red stone of passion and life; a name
+AMBER | mystic | fossil tree resin, warm and ancient; a name
+PEARL | mystic | gem formed in a shell — wisdom through trial
+GEM | mystic | a precious stone; something treasured
+GEMS | mystic | precious stones
+MYTH | mystic | a sacred story explaining the world
+MYTHS | mystic | sacred stories explaining the world
+LEGEND | mystic | a traditional story; a person of great fame
+LORE | mystic | traditional knowledge passed down
+SAGA | mystic | a long heroic Norse story
+SAGAS | mystic | long heroic Norse stories
+EDDA | mystic | the old Icelandic books of Norse myth
+SPELL | mystic | a magic formula; also to write letters of a word
+SPELLS | mystic | magic formulas
+CHARM | mystic | a magic token or chant; attractiveness
+CHARMS | mystic | magic tokens; attractive qualities
+CURSE | mystic | a wish of harm; a swear word
+CURSES | mystic | wishes of harm; swear words
+WITCH | mystic | a wise woman who works magic
+WIZARD | mystic | a man skilled in magic; an expert
+MAGE | mystic | a magician, a wise one
+MAGI | mystic | the wise men / priest-astrologers of Persia
+MAGUS | mystic | a magician, a sage
+SEER | mystic | one who sees the future
+SEERS | mystic | those who see the future
+PSYCHE | mystic | the soul, the mind (Greek)
+SPIRIT | mystic | breath; the soul; a non-physical being
+SOUL | mystic | the eternal self
+SOULS | mystic | eternal selves
+KARMIC | mystic | relating to karma
+ASCEND | mystic | to rise up, spiritually or physically
+TOTEM | mystic | a sacred animal or emblem of a clan
+TOTEMS | mystic | sacred animals or emblems
+MANA | mystic | spiritual power (Polynesian)
+TABOO | mystic | sacred and forbidden
+VOODOO | mystic | Vodou, an Afro-Caribbean religion; magic
+HOODOO | mystic | African-American folk magic
+JUJU | mystic | magic power, luck (West African)
+OBEAH | mystic | Caribbean folk magic
+SULFUR | mystic | alchemical principle of soul and fire
+SALT | mystic | alchemical principle of body; used for protection
+AZOTH | mystic | the alchemists' universal medicine
+# ---------------- titles & family
+MRS | title | married woman's title ("Missus")
+MISTER | title | a title for a man
+MISS | title | an unmarried woman or girl; also to fail to hit
+MADAM | title | a polite title for a woman
+MAAM | title | ma'am — polite form of madam
+SIR | title | a polite title for a man; a knight
+SIRE | title | a king; a father
+LORD | title | a ruler or noble; God
+LADY | title | a noblewoman; a woman
+DAME | title | a woman of rank; a woman (old slang)
+KING | title | a male monarch
+QUEEN | title | a female monarch
+PRINCE | title | son of a monarch
+DUKE | title | a high noble
+EARL | title | a British noble
+BARON | title | a noble; a powerful businessperson
+COUNT | title | a noble; also to number
+CZAR | title | Russian emperor
+TSAR | title | Russian emperor
+KAISER | title | German emperor
+SULTAN | title | a Muslim ruler
+EMIR | title | an Arab prince or commander
+SHEIK | title | an Arab chief or elder
+RAJA | title | an Indian king
+RAJAH | title | an Indian king
+RANI | title | an Indian queen
+CAESAR | title | Roman emperor
+POPE | title | head of the Catholic Church
+PRIEST | title | one who performs sacred rites
+RABBI | title | a Jewish teacher
+IMAM | title | a Muslim prayer leader
+DEACON | title | a church minister
+FATHER | title | a male parent; a priest
+MOTHER | title | a female parent
+SISTER | title | a female sibling; a nun
+AUNT | title | parent's sister
+AUNTIE | title | aunt; an older woman, affectionately
+UNCLE | title | parent's brother
+NANA | title | grandmother
+PAPA | title | father; grandfather
+MAMA | title | mother
+GRAN | title | grandmother
+GRANNY | title | grandmother
+MOM | title | mother
+MOMMY | title | mother
+DAD | title | father
+DADDY | title | father
+# ---------------- names (meaning / origin)
+JOHN | name | Hebrew: "God is gracious"
+JAMES | name | Hebrew (Jacob): "supplanter"
+ANNA | name | Hebrew: "grace"
+ANN | name | Hebrew: "grace"
+ANNE | name | Hebrew: "grace"
+EMMA | name | Germanic: "whole, universal"
+OLIVIA | name | Latin: "olive tree" — peace
+AVA | name | Latin/Persian: "bird" or "voice"
+MIA | name | "mine" (Italian); "beloved"
+ZOE | name | Greek: "life"
+CHLOE | name | Greek: "green shoot"
+GRACE | name | divine favor, elegance
+SARAH | name | Hebrew: "princess"
+LAURA | name | Latin: "laurel" — victory
+KATE | name | Greek: "pure"
+AMY | name | French: "beloved"
+ROSE | name | the rose flower — love
+IVY | name | the evergreen vine — fidelity
+LUCY | name | Latin: "light"
+ELLA | name | Germanic: "all"; Greek: "light"
+EVA | name | Hebrew: "life"
+NORA | name | Irish/Latin: "honor, light"
+CLARA | name | Latin: "bright, clear"
+ALICE | name | Germanic: "noble"
+JULIA | name | Latin: "youthful"
+DIANA | name | Roman moon and hunt goddess; "divine"
+FIONA | name | Gaelic: "fair, white"
+ERIN | name | Irish: poetic name for Ireland
+TARA | name | Irish: the hill of the High Kings; Sanskrit: "star"
+SEAN | name | Irish form of John: "God is gracious"
+LIAM | name | Irish: "strong-willed warrior"
+JACK | name | form of John; also a lifting tool
+LUKE | name | Greek: "light, from Lucania"
+MARK | name | Latin: "of Mars"; also a sign
+PAUL | name | Latin: "small, humble"
+PETER | name | Greek: "rock"
+DAVID | name | Hebrew: "beloved"
+DANIEL | name | Hebrew: "God is my judge"
+ETHAN | name | Hebrew: "firm, strong"
+OWEN | name | Welsh: "noble, well-born"
+RYAN | name | Irish: "little king"
+ERIC | name | Norse: "eternal ruler"
+ALEX | name | Greek: "defender"
+SAM | name | Hebrew: "God has heard"
+MAX | name | Latin: "greatest"
+BEN | name | Hebrew: "son"
+TOM | name | Aramaic: "twin"
+TIM | name | Greek: "honoring God"
+JOE | name | Hebrew: "God will add"
+DAN | name | Hebrew: "judge"
+DREW | name | Greek (Andrew): "strong, manly"
+JUAN | name | Spanish form of John
+JOSE | name | Spanish form of Joseph: "God will add"
+LUIS | name | Spanish: "famous warrior"
+CARLOS | name | Spanish: "free man"
+MARIA | name | form of Mary
+ROSA | name | Latin: "rose"
+ELENA | name | Greek: "shining light"
+SOFIA | name | Greek: "wisdom"
+VIKA | name | Russian (Viktoria): "victory"
+IVAN | name | Russian form of John
+OLGA | name | Norse: "holy"
+IGOR | name | Norse: "warrior"
+YURI | name | Russian form of George: "farmer"
+KAI | name | Hawaiian: "sea"
+RAE | name | "ewe" (Hebrew Rachel); "grace"
+RAY | name | a beam of light
+JAY | name | the jay bird; the letter J
+DEE | name | Welsh: "dark"; the letter D
+KIM | name | "golden" (Korean); "chief"
+LEE | name | Old English: "meadow"
+# ---------------- crude & adult
+FUCK | crude | strong swear word; to have sex
+FUCKED | crude | ruined, in trouble; had sex
+FUCKS | crude | plural/verb form of fuck
+FUCKER | crude | insult for a nasty person
+FUCKIN | crude | intensifier: "very, extremely"
+FRICK | crude | mild substitute for fuck
+FRIG | crude | mild substitute for fuck
+SHIT | crude | feces; nonsense; stuff
+SHITS | crude | feces; "the shits" = diarrhea
+SHITTY | crude | very bad
+SHAT | crude | past tense of shit
+DAMN | crude | mild curse; to condemn
+DAMMIT | crude | "damn it" — frustration
+DANG | crude | mild form of damn
+CRAP | crude | junk, nonsense; feces
+CRAPPY | crude | bad, low quality
+ASS | crude | buttocks; a fool; also a donkey
+ASSES | crude | fools; donkeys
+ARSE | crude | buttocks (British)
+BITCH | crude | insult for a woman; to complain; a female dog
+BITCHY | crude | spiteful, mean
+DICK | crude | penis; a jerk
+DICKS | crude | jerks
+COCK | crude | penis; a rooster
+PISS | crude | urine; to urinate
+PISSED | crude | angry (US); drunk (UK)
+TWAT | crude | vulgar insult
+PRICK | crude | a jerk; a small puncture
+SLUT | crude | insult for a promiscuous person
+WHORE | crude | insult; a prostitute
+HOE | crude | insult (from "whore"); also a garden tool
+HOES | crude | insult; garden tools
+THOT | crude | insult for a promiscuous woman
+CUNT | crude | very strong vulgar insult
+BOOTY | crude | buttocks; also pirate treasure
+BOOB | crude | breast; a fool
+BOOBS | crude | breasts
+TITS | crude | breasts
+BUTT | crude | buttocks; the end of something
+BUTTS | crude | buttocks; cigarette ends
+JUGS | crude | breasts; pitchers
+HORNY | crude | sexually aroused; having horns
+SEXY | crude | sexually attractive
+SEX | crude | intercourse; male or female
+NUDE | crude | naked
+NUDES | crude | naked photos
+PORN | crude | sexually explicit material
+PORNO | crude | sexually explicit material
+BONER | crude | an erection; a blunder
+SCREW | crude | to have sex; to cheat someone; a fastener
+BLOODY | crude | British intensifier; covered in blood
+BOLLOX | crude | nonsense (British)
+WANKER | crude | British insult: a jerk
+WANK | crude | to masturbate (British)
+TOSSER | crude | British insult: a jerk
+DOUCHE | crude | an obnoxious person
+JERK | crude | a rude person; a sudden pull
+JERKS | crude | rude people
+SUCKS | crude | is bad
+SUCKER | crude | someone easily fooled
+WEED | crude | marijuana; an unwanted plant
+DANK | crude | high-quality marijuana; damp; cool (internet slang)
+BLUNT | crude | a cigar filled with marijuana; direct, frank
+STONED | crude | high on marijuana
+BAKED | crude | very high on marijuana
+HIGH | crude | intoxicated; elevated
+TIPSY | crude | slightly drunk
+WASTED | crude | very drunk or high
+HAMMER | crude | "hammered" = very drunk; a tool
+BOOZE | crude | alcohol
+BOOZY | crude | full of alcohol
+# ---------------- everyday casual words (not in the big dictionaries)
+AARGH | interjection | a cry of frustration
+ABS | slang | abdominal muscles
+ADS | noun | advertisements
+AGIN | slang | again; against (folksy)
+AIRMEN | noun | pilots and air crew
+ALUMNI | noun | graduates of a school
+AMORAL | adj | without any sense of right and wrong
+ARF | interjection | a dog's bark
+ARTSY | slang | showily artistic
+AWOKE | verb | woke up
+BALLSY | slang | bold, gutsy
+BEGAT | verb | fathered (old Bible English)
+BIO | noun | a short biography
+BIOS | noun | short biographies
+BITSY | slang | tiny ("itsy-bitsy")
+BLAM | interjection | the sound of a gunshot or crash
+BLIMEY | interjection | British cry of surprise
+BOOGEY | noun | a bogeyman; to dance
+BRAVA | interjection | "well done!" to a woman performer
+BRIE | noun | a soft French cheese
+BRIS | noun | Jewish circumcision ceremony
+BRR | interjection | "it's cold!"
+BUCKO | slang | pal, buddy (often teasing)
+BURBS | slang | the suburbs
+BWANA | noun | "boss, master" (Swahili)
+BYLINE | noun | the line naming a writer
+CARB | slang | carbohydrate; carburetor
+CARBS | slang | carbohydrates
+CARNIE | slang | a carnival worker
+CHEMO | noun | chemotherapy
+CHEZ | noun | "at the home of" (French)
+COED | noun | a female student; mixed-gender
+COEDS | noun | female students
+COPTER | noun | helicopter
+CRIKEY | interjection | cry of surprise (British/Australian)
+CRIPES | interjection | mild cry of surprise
+CRISES | noun | plural of crisis — turning points
+CROC | noun | crocodile
+CRYPTO | noun | cryptocurrency; secret, hidden ("crypto-")
+CUTESY | adj | sweet in an overdone way
+CUTIE | slang | a cute person
+DAFFY | slang | silly, crazy
+DEALT | verb | handed out; handled
+DEEJAY | noun | DJ — disc jockey
+DEETS | slang | details
+DITSY | slang | scatterbrained
+DITZ | slang | a scatterbrained person
+DOJO | noun | a martial-arts training hall ("place of the way")
+DOOZY | slang | something outstanding or extraordinary
+DORKY | slang | awkward, goofy
+DREAMT | verb | dreamed
+EXECS | slang | executives
+EXES | slang | former partners
+FAJITA | noun | grilled meat in a tortilla
+FAVE | slang | favorite
+FEDS | slang | federal agents
+FETA | noun | a Greek white cheese
+FLYBOY | slang | a pilot
+FRITZ | slang | "on the fritz" = broken
+GEEKY | slang | nerdy
+GELATO | noun | Italian ice cream
+GIMME | slang | "give me"; something easy
+GIRLIE | slang | girlish
+GIRLY | slang | girlish
+GOES | verb | moves, travels; tries
+GOLLY | interjection | mild surprise
+GOODIE | slang | a treat
+GOOPY | slang | sticky, gooey
+GOSH | interjection | mild surprise ("oh my gosh")
+GRIFT | slang | a con, a swindle
+GUNMEN | noun | armed attackers
+HAHA | interjection | laughter
+HALLO | interjection | hello
+HAUTE | adj | high, elegant ("haute couture")
+HEH | interjection | a small laugh
+HIC | interjection | a hiccup; "here" (Latin)
+HON | slang | honey — a term of affection
+HOOVES | noun | horses' feet
+HOPPY | adj | tasting of hops (beer)
+HORSEY | slang | horse-loving; horse-like
+HOWS | slang | "how is"
+HUP | interjection | marching count
+HURRAY | interjection | a cheer
+HUZZAH | interjection | an old cheer
+ICK | interjection | disgust
+IFF | noun | "if and only if" (logic)
+IFS | noun | conditions, doubts
+INS | noun | connections, ways in
+JEEZ | interjection | frustration or surprise
+JEFE | slang | boss (Spanish)
+JIFF | slang | a moment ("in a jiff")
+JIGGLY | adj | wobbly
+JIMINY | interjection | mild surprise
+KAHUNA | slang | a big shot; a Hawaiian priest
+KENDO | noun | Japanese sword fighting with bamboo swords
+KICKY | slang | fun, lively
+KISSY | slang | kissing, affectionate
+KLUTZY | slang | clumsy
+KOI | noun | ornamental Japanese carp
+LARVAE | noun | young insects before change
+LATINO | noun | a person of Latin American descent
+LAWMEN | noun | police officers, sheriffs
+LEAPT | verb | jumped
+LEARNT | verb | learned
+LIPPY | slang | mouthy, sassy
+LOCA | slang | crazy (Spanish, feminine)
+LUV | slang | love
+MACH | noun | the speed of sound (Mach 1)
+MADMEN | noun | crazy people
+MADRE | noun | mother (Spanish)
+MED | slang | medical; medicine
+MENSA | noun | high-IQ society; "table" (Latin)
+MERLOT | noun | a red wine grape
+META | slang | self-referential; "about itself"
+MIXUP | noun | a confusion, a mistake
+MON | slang | man (Caribbean)
+MONDO | slang | huge, extreme
+MOPEY | slang | gloomy
+MOUTHY | slang | talks back
+NAW | slang | no
+NERDY | slang | studious, geeky
+NIGHTY | noun | a nightgown
+NITE | slang | night
+NOIR | noun | dark crime-film style; "black" (French)
+NUDIE | slang | nude
+OLE | interjection | "bravo!" (Spanish); old
+OPS | slang | operations
+OUTDID | verb | did better than
+PFFT | interjection | dismissal
+PHEW | interjection | relief
+PHOOEY | interjection | disappointment
+POINTY | adj | having a sharp point
+POOFY | slang | puffed out
+POPPA | slang | father
+PREMED | noun | studying toward medical school
+PREPPY | slang | neat, classic, private-school style
+PRISS | slang | a fussy, prim person
+PSST | interjection | getting someone's attention quietly
+RAH | interjection | a cheer
+REC | slang | recreation
+RECON | slang | reconnaissance — scouting
+REDIAL | verb | dial again
+REDID | verb | did again
+REDONE | verb | done again
+REHAB | noun | rehabilitation
+RIGHTO | slang | "all right!"
+RIGHTY | slang | right-handed person
+ROADIE | slang | a band's touring crew member
+ROMEO | noun | a lover (from Romeo and Juliet)
+ROTO | noun | rotation (as in roto-tiller)
+SABE | slang | "know" (Spanish: savvy)
+SARGE | slang | sergeant
+SCHIZO | slang | (offensive) schizophrenic
+SCUZZY | slang | dirty, sleazy
+SEAMEN | noun | sailors
+SENSES | noun | sight, hearing, smell, taste, touch; awareness
+SHALOM | noun | "peace" (Hebrew greeting)
+SHES | slang | "she is"
+SHH | interjection | "be quiet"
+SHORTY | slang | a short person; a sweetheart
+SHRUNK | verb | got smaller
+SICKO | slang | a twisted person
+SICKOS | slang | twisted people
+SIREE | slang | "sir!" for emphasis ("yes siree")
+SIRREE | slang | "sir!" for emphasis
+SLUTTY | crude | promiscuous (insult)
+SMARTY | slang | a know-it-all
+SNUCK | verb | sneaked
+SPEEDO | slang | tight swim briefs
+SRI | title | an Indian title of respect; "holy"
+STAT | slang | immediately (medical)
+STATS | slang | statistics
+STENO | slang | a stenographer
+SUSS | slang | to figure out
+SWIRLY | slang | full of swirls
+SYNCH | slang | synchronize
+THEIRS | pronoun | belonging to them
+THESES | noun | plural of thesis — propositions
+TIKI | noun | a Polynesian carved figure
+TOASTY | slang | warm and cozy
+TOUCHE | interjection | "good point!" — a hit acknowledged
+TRIPPY | slang | psychedelic, surreal
+TUSHIE | slang | bottom, buttocks
+TUSHY | slang | bottom, buttocks
+TWAS | slang | "it was" (poetic)
+TWEEN | slang | a pre-teen
+UMM | interjection | hesitation
+UNDEAD | noun | zombies, vampires — beings neither alive nor dead
+UPPED | verb | raised
+VOILA | interjection | "there it is!" (French)
+WHATS | slang | "what is"
+WHEE | interjection | delight
+WHAMMO | interjection | sudden impact
+WIGGY | slang | crazy, wild
+WITCHY | slang | magical, witch-like
+WOKEN | verb | awakened
+WOOPS | interjection | a small mistake
+WORKUP | noun | a full medical examination
+WUSSY | slang | weak, timid
+YAH | slang | yes
+YECH | interjection | disgust
+YEH | slang | yeah
+YIPE | interjection | alarm
+YIPPEE | interjection | joy
+YOUSE | slang | you (plural)
+YUK | interjection | disgust; a laugh
+YUM | interjection | delicious
+ZONKED | slang | exhausted; high
