@@ -200,7 +200,8 @@ VERTICAL = [
 ]
 
 
-def find_words(grid, lookup, min_len=3, horizontal=True, diagonal=True, vertical=False, hide_nested=True):
+def find_words(grid, lookup, min_len=3, horizontal=True, diagonal=True, vertical=False, hide_nested=True, rings=RINGS):
+    """Only rings 1..`rings` are read - the rings the main word occupies. The others are switched off."""
     """Return a list of occurrences: dict(word, tier, kind, dir, arrow, cells=[(r,c),...])."""
     dirs = []
     for d in DIRECTIONS:
@@ -211,11 +212,11 @@ def find_words(grid, lookup, min_len=3, horizontal=True, diagonal=True, vertical
 
     found, seen = [], set()
     for r in range(ROWS):
-        for c in range(RINGS):
+        for c in range(rings):
             for name, arrow, dr, dc, kind in dirs:
                 for length in range(max(3, min_len), RINGS + 1):
                     end_c = c + dc * (length - 1)
-                    if not 0 <= end_c < RINGS:
+                    if not 0 <= end_c < rings:
                         break
                     cells = tuple(((r + dr * k) % ROWS, c + dc * k) for k in range(length))
                     word = "".join(grid[rr][cc] for rr, cc in cells)
@@ -332,7 +333,7 @@ def _grid_lines(grid, active_len, show=None):
             ch = grid[r][c]
             if show is not None and (r, c) not in show:
                 ch = "."
-            elif r == CENTER and c >= active_len and show is None:
+            elif c >= active_len and show is None:
                 ch = ch.lower()
             cells += f"  {ch}"
         lines.append(f"  {lab:>7} |{cells}  |")
@@ -359,8 +360,8 @@ def build_text_report(main_word, active_len, grid, found, gifts, intents, num, s
     L += ["", "  Essence:"] + _wrap(desc, indent="    ") + ["", "  Guidance:"] + _wrap(guide, indent="    ")
 
     L += ["", bar, "  1. THE FULL CYLINDER  (26 rows x 6 rings, unrolled)", bar,
-          "  The main row is marked >> MAIN. Lowercase letters on the main row",
-          "  are rings outside the aligned word.", ""]
+          "  The main row is marked >> MAIN. Lowercase letters are rings outside",
+          "  the aligned word - they are switched off and not read.", ""]
     L += _grid_lines(grid, active_len)
 
     L += ["", bar, "  2. GIFT MAP  (forward words: read left to right)", bar,
@@ -431,6 +432,8 @@ def build_print_html(main_word, active_len, grid, found, gifts, intents, num, me
                 cls.append("i")
             if r == CENTER:
                 cls.append("m" if c < active_len else "mo")
+            elif c >= active_len:
+                cls.append("mo")
             tds += f'<td class="{" ".join(cls)}">{grid[r][c]}</td>'
         lab = row_label(r)
         rows.append(f'<tr><th>{"&#9658; MAIN" if lab == "MAIN" else lab}</th>{tds}</tr>')

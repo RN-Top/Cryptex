@@ -256,7 +256,7 @@ with st.container(key="dials"):
 word = main_word()
 active_len = ss.active_len
 grid = C.build_grid(ss.offsets)
-found = C.find_words(grid, lookup, min_len=min_len, horizontal=use_h, diagonal=use_d,
+found = C.find_words(grid, lookup, rings=active_len, min_len=min_len, horizontal=use_h, diagonal=use_d,
                      vertical=use_v, hide_nested=hide_nested)
 gifts = C.group_words(found, "gift", MEANINGS)
 intents = C.group_words(found, "intent", MEANINGS)
@@ -335,6 +335,8 @@ for r in range(C.ROWS):
         cls = ["t"] + (["lite"] if lite else [])
         if r == C.CENTER:
             cls.append("m" if c < active_len else "mo")
+        elif c >= active_len:
+            cls.append("off")
         if (r, c) in gift_cells:
             cls.append("g")
         if (r, c) in intent_cells:
@@ -372,6 +374,7 @@ body {{ margin:0; background:transparent; color:#dffff6; font-family:'Share Tech
          text-shadow: 0 0 8px #fff; }}
 .t.m {{ color:#fff; font-size:24px; background: rgba(0,255,198,.2); border:1.5px solid var(--mint); text-shadow: 0 0 10px var(--mint), 0 0 20px var(--mint); }}
 .t.mo {{ color:#3d6b60; }}
+.t.off {{ opacity:.28; filter: grayscale(1); }}
 .t.spot {{ background: #fff !important; color:#000 !important; text-shadow:none !important; transform: scale(1.12);
           box-shadow: 0 0 14px #fff, 0 0 28px var(--cyan); border-color:#fff !important; z-index:2; }}
 .side {{ flex: 1 1 280px; min-width: 260px; height: 880px; overflow-y:auto; padding: 12px 14px; border-radius:16px; background:#020405;
@@ -454,7 +457,8 @@ document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', ()
 face = face.replace("__INFO__", json.dumps(INFO).replace("</", "<\\/"))
 
 st.markdown("### ◈ The whole cylinder face")
-st.caption("All 26 rows unrolled. Mint = GIFT (read forward, left → right). "
+st.caption(f"All 26 rows unrolled. Only rings 1–{active_len} (your word) are read; the rest are switched off. "
+           "Mint = GIFT (read forward, left → right). "
            "Magenta = INTENT (read backward, right → left). Split tiles belong to both.")
 components.html(face, height=900, scrolling=False)
 

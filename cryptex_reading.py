@@ -290,6 +290,11 @@ P_GOOD_G = [
     "{x} is worth accepting.",
     "What's truly being given is {x}.",
 ]
+P_GOOD_IN_WARN = [
+    "One thing is still sound: {x}. Don't let it talk you past the warning.",
+    "Not all of it is bad - {x} holds up. But the warning comes first.",
+    "{x} is the one clean thread here; keep it, and stay careful with the rest.",
+]
 P_GOOD_I = [
     "Underneath, {x} - the motive is on your side.",
     "The intent is clean: {x}.",
@@ -344,7 +349,10 @@ def truth_lines(a, meanings, rng):
     if a["bad_g"]:
         out.append(rng.choice(P_BAD_G).format(x=tag(a["bad_g"])))
     if a["good_g"]:
-        out.append(rng.choice(P_GOOD_G).format(x=tag(a["good_g"])))
+        if a["kind"] == "warn":   # keep the good part clearly separate from the warning
+            out.append(rng.choice(P_GOOD_IN_WARN).format(x=tag(a["good_g"])))
+        else:
+            out.append(rng.choice(P_GOOD_G).format(x=tag(a["good_g"])))
     if tone(a["main"]) < 0:
         out.append(f"The main word itself, {a['main']}, is dark - be honest about why you chose it.")
     if len(out) == 1:   # verdict came from the main word alone
