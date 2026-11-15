@@ -94,390 +94,6 @@ def end(s):
     return s if s.endswith((".", "!", "?", "...")) else s + "."
 
 
-# ------------------------------------------------------------------ helpers about placement
-def placement(o):
-    """Plain-language description of where a word sits and how it moves."""
-    rows = [r - C.CENTER for r, _ in o["cells"]]
-    avg = sum(rows) / len(rows)
-    touches_main = any(r == C.CENTER for r, _ in o["cells"])
-    if touches_main and all(r == C.CENTER for r, _ in o["cells"]):
-        where = "on the main line itself - it is present right now"
-    elif touches_main:
-        where = "growing straight out of the main line"
-    elif avg < 0:
-        dist = abs(round(avg))
-        where = ("just above the main line - arriving very soon" if dist <= 3 else
-                 "above the main line - on its way to you" if dist <= 7 else
-                 "high above the main line - far off, still forming")
-    else:
-        dist = abs(round(avg))
-        where = ("just beneath the main line - close to the root of things" if dist <= 3 else
-                 "below the main line - in the foundations" if dist <= 7 else
-                 "deep below the main line - an old root, from long ago")
-    motion = {
-        "RIGHT": "reading straight forward", "LEFT": "reading straight back",
-        "DOWN-RIGHT": "descending as it moves forward - bringing something down into form",
-        "UP-RIGHT": "climbing as it moves forward - rising into being",
-        "UP-LEFT": "climbing backward - a motive reaching up from below",
-        "DOWN-LEFT": "sinking backward - a motive settling into the depths",
-        "DOWN": "falling straight down the ring", "UP": "rising straight up the ring",
-    }[o["dir"]]
-    return where, motion, avg
-
-
-def meaning_of(w, meanings, n=110):
-    info = C.explain(w, meanings)
-    if not info["lines"]:
-        return None, info
-    label, text = info["lines"][0]
-    text = strip_end(re.sub(r"^\([^)]*\)\s*", "", text))
-    if len(text) > n:
-        text = text[: n - 1].rsplit(" ", 1)[0] + "..."
-    return (label, text), info
-
-
-def describe_meaning(w, meanings):
-    m, info = meaning_of(w, meanings)
-    if not m:
-        return f"{w} is an old, rare word with no common meaning - its message is carried by its letters and its number"
-    label, text = m
-    base = f" (a form of {info['base']})" if info["base"] else ""
-    if label in ("slang", "crude"):
-        return f"{w}{base} - in street speech, {lower_first(text)}"
-    if label in ("mystic",):
-        return f"{w}{base} - {lower_first(text)}"
-    if label == "name":
-        return f"{w} - a name; {text}"
-    if label == "title":
-        return f"{w} - a title: {lower_first(text)}"
-    if label == "1913":
-        return f"{w}{base} - an old word: {lower_first(text)}"
-    return f"{w}{base} - {lower_first(text)}"
-
-
-# ------------------------------------------------------------------ the reading
-def build_reading(main_word, active_len, offsets, grid, found, gifts, intents, meanings):
-    """Return a list of (heading, [paragraphs]) for this exact turn of the rings."""
-    seed = int(hashlib.md5(f"{offsets}|{active_len}|{len(found)}".encode()).hexdigest(), 16)
-    rng = random.Random(seed)
-    pick = rng.choice
-    sections = []
-
-    main_n, main_title, main_desc, main_guide = C.numerology(main_word)
-    gifts = [g for g in gifts if g[0] != main_word]
-    intents = [i for i in intents if i[0] != main_word]
-    occ_of = {}
-    for o in found:
-        occ_of.setdefault((o["word"], o["kind"]), []).append(o)
-
-    # 1. The aligned word -------------------------------------------------------------
-    m, info = meaning_of(main_word, meanings)
-    p = []
-    if m:
-        p.append(pick([
-            f"The rings have locked on {main_word}. In plain words, {main_word} means {lower_first(m[1])}.",
-            f"{main_word} sits on the main line. Its everyday meaning: {lower_first(m[1])}.",
-            f"The cylinder has been turned to {main_word} - {lower_first(m[1])}.",
-        ]))
-    else:
-        p.append(pick([
-            f"The rings have locked on {main_word}. It is not a dictionary word, so it speaks only through its letters and numbers - like a sigil.",
-            f"{main_word} sits on the main line - not a word any dictionary knows, which makes it a cipher of its own. Read it letter by letter.",
-        ]))
-    p.append(f"Its letters add to vibration {main_n}, {main_title}: {lower_first(main_desc)}")
-    letters = list(main_word)
-    nums = [C.PYTHAGOREAN_VALUES[c] for c in letters]
-    p.append(f"The first letter, {letters[0]} ({lm(letters[0])}), is the keystone - it opens the reading. "
-             f"The last, {letters[-1]} ({lm(letters[-1])}), is the seal - it is how this closes.")
-    cnt = Counter(nums)
-    top_n, top_c = cnt.most_common(1)[0]
-    if top_c >= 2:
-        which = [c for c in letters if C.PYTHAGOREAN_VALUES[c] == top_n]
-        p.append(f"The number {top_n} ({NUMBER_KEY[top_n]}) repeats {top_c} times in it, through {join_words(which)} - "
-                 f"so {NUMBER_KEY[top_n]} is the undertone of everything that follows.")
-    missing = [n for n in range(1, 10) if n not in nums]
-    if missing and len(letters) >= 4:
-        p.append(f"Missing from the word entirely: {join_words(str(n) for n in missing)} "
-                 f"({join_words(NUMBER_KEY[n] for n in missing)}). "
-                 + pick(["Those are the qualities you'll have to bring yourself.",
-                         "What the word lacks, the surrounding rings may have to supply.",
-                         "Notice whether the Gifts and Intents below fill those gaps."]))
-    walk = " -> ".join(f"{c} ({lm(c)})" for c in letters)
-    p.append(f"Walked letter by letter, {main_word} tells a small story: {walk}.")
-    sections.append((f"The aligned word - {main_word}", p))
-
-    # 2. The shape of this turn ---------------------------------------------------------
-    p = []
-    ng, ni = len(gifts), len(intents)
-    total = ng + ni
-    if total == 0:
-        p.append("The cylinder is silent around the main word - no other words formed on this turn. "
-                 "A silent cylinder is a reading of its own: it asks you to sit with the main word alone and not look for outside signs.")
-    else:
-        if ng > ni * 1.5:
-            tone = pick(["This is a generous turn: far more is being offered than asked of you.",
-                         "Gifts outnumber Intents - a season of receiving. Your job is to notice and accept."])
-        elif ni > ng * 1.5:
-            tone = pick(["This turn leans inward: the Intents outweigh the Gifts. Motive matters more than outcome right now.",
-                         "More is moving under the surface than on it - Intents outnumber Gifts. Look at why, not just what."])
-        else:
-            tone = pick(["Gifts and Intents are nearly even - an honest exchange, what you give matching what you get.",
-                         "The cylinder is in balance: what is offered and what is meant weigh about the same."])
-        p.append(f"Around {main_word} the cylinder formed {ng} Gift{'s' if ng != 1 else ''} (read forward) and "
-                 f"{ni} Intent{'s' if ni != 1 else ''} (read backward). {tone}")
-        dir_count = Counter(o["dir"] for o in found if o["word"] != main_word)
-        straight = dir_count["RIGHT"] + dir_count["LEFT"]
-        diag = sum(v for k, v in dir_count.items() if "-" in k)
-        if diag > straight:
-            p.append(pick(["Most words run on the diagonal - the message is indirect, coming at an angle rather than head-on.",
-                           "Diagonals dominate: expect this to arrive sideways, through people and situations you didn't plan on."]))
-        elif straight > diag:
-            p.append(pick(["Most words run straight across - this is a plain-spoken reading; take it at face value.",
-                           "The words lie mostly level - direct, present-tense, nothing hidden in the angles."]))
-        tiers = Counter(occ[0]["tier"] for _, _, occ in gifts + intents)
-        flavor = []
-        if tiers["mystic"]:
-            mw = [w for w, t, _ in gifts + intents if t == "mystic"][:4]
-            flavor.append(f"old names and sacred words surface ({join_words(mw)})")
-        if tiers["slang"] or tiers["crude"]:
-            sw = [w for w, t, _ in gifts + intents if t in ("slang", "crude")][:4]
-            flavor.append(f"the street tongue speaks too ({join_words(sw)}) - this concerns everyday life, not only the spiritual")
-        if tiers["dictionary"] + tiers["deep"] > total / 2:
-            flavor.append("many rare and old words appear - the message is coded and rewards patience")
-        if flavor:
-            p.append("In its voice: " + "; ".join(flavor) + ".")
-        # busiest ring
-        ring_hits = Counter(c for o in found if o["word"] != main_word for _, c in o["cells"])
-        if ring_hits:
-            ring, hits = ring_hits.most_common(1)[0]
-            if ring < active_len:
-                ch = main_word[ring]
-                p.append(f"The busiest ring is ring {ring + 1} ({hits} letters used by words), where the main word carries {ch} - "
-                         f"{lm(ch)}. That letter is the hinge of this reading.")
-            else:
-                p.append(f"The busiest ring is ring {ring + 1}, outside the aligned word - "
-                         f"what matters most is happening just beyond what you set.")
-    sections.append(("The shape of this turn", p))
-
-    # 3. Gifts / 4. Intents ----------------------------------------------------------------
-    def word_paragraphs(groups, kind):
-        out = []
-        for idx, (w, tier, occ) in enumerate(groups[:6]):
-            o = occ[0]
-            where, motion, _ = placement(o)
-            wn = word_num(w)
-            line = end(describe_meaning(w, meanings)) + " "
-            line += f"It sits {where}, {motion}. "
-            if kind == "intent":
-                ring_view = "".join(grid[r][c] for r, c in sorted(o["cells"], key=lambda rc: rc[1]))
-                line += f"On the rings it shows as {ring_view} - only read in reverse does its intent appear. "
-            if wn == main_n:
-                line += f"Its number is {wn}, the same as {main_word} - it resonates directly with the main word. "
-            else:
-                line += (f"Its number is {wn} - {NUMBER_NAME[wn]}, {NUMBER_KEY[wn]}. "
-                         f"Beside {main_word}'s {main_n}, they are {harmony(wn, main_n)}. ")
-            if len(occ) > 1:
-                line += f"It appears {len(occ)} times on the cylinder - a message repeated is a message underlined. "
-            if idx == 0:
-                line = (pick(["Strongest of all: ", "First and clearest: ", "Leading the way: "]) + line)
-            out.append(line.strip())
-        if len(groups) > 6:
-            rest = [w for w, _, _ in groups[6:14]]
-            out.append(f"Further out, quieter {'Gifts' if kind == 'gift' else 'Intents'} echo: {join_words(rest)}"
-                       f"{' and more' if len(groups) > 14 else ''}.")
-        return out
-
-    if gifts:
-        intro = pick(["Gifts are read forward, left to right - they are what is being handed to you.",
-                      "Forward words are Gifts: what life is offering on this turn."])
-        sections.append((f"The Gifts - what is given ({len(gifts)})", [intro] + word_paragraphs(gifts, "gift")))
-    else:
-        sections.append(("The Gifts - what is given", ["No forward words formed. Nothing new is being handed to you on this turn - "
-                                                        "the gift is in what you already have."]))
-    if intents:
-        intro = pick(["Intents are read backward, right to left - they are the will and motive moving underneath.",
-                      "Backward words are Intents: the purpose behind what is happening, readable only in reverse."])
-        sections.append((f"The Intents - the will beneath ({len(intents)})", [intro] + word_paragraphs(intents, "intent")))
-    else:
-        sections.append(("The Intents - the will beneath", ["No backward words formed. There is no hidden motive here - "
-                                                             "what you see is what is meant."]))
-
-    # 5. Mirrors, branches and crossroads ----------------------------------------------------
-    p = []
-    gift_cells = {}
-    for o in found:
-        if o["kind"] == "gift" and o["word"] != main_word:
-            gift_cells.setdefault(frozenset(o["cells"]), o["word"])
-    mirrors = []
-    for o in found:
-        if o["kind"] == "intent":
-            gw = gift_cells.get(frozenset(o["cells"]))
-            if gw and gw != o["word"] and (gw, o["word"]) not in mirrors:
-                mirrors.append((gw, o["word"]))
-    for gw, iw in mirrors[:3]:
-        gm, _ = meaning_of(gw, meanings, 60)
-        im, _ = meaning_of(iw, meanings, 60)
-        gm = (gm[0], lower_first(gm[1].strip("()"))) if gm else None
-        im = (im[0], lower_first(im[1].strip("()"))) if im else None
-        p.append(f"Mirror pair: the same letters read {gw} forward and {iw} backward. "
-                 f"What is given as {gw}{' (' + gm[1] + ')' if gm else ''} is meant as {iw}{' (' + im[1] + ')' if im else ''}. "
-                 + pick(["Hold both - the surface and the motive are two faces of one thing.",
-                         "Watch for this exact pairing in your days: the gift and its reason arriving together."]))
-    branches = []
-    for o in found:
-        if o["word"] == main_word:
-            continue
-        for r, c in o["cells"]:
-            if r == C.CENTER and c < active_len:
-                branches.append((o["word"], main_word[c], c, o["kind"]))
-                break
-    seen_b = set()
-    blines = []
-    for w, ch, c, kind in branches:
-        if w in seen_b:
-            continue
-        seen_b.add(w)
-        blines.append(f"{w} grows out of the {ch} on ring {c + 1}")
-    if blines:
-        p.append("Branches from the main word: " + "; ".join(blines[:6]) + ". "
-                 + pick([f"These are the directions {main_word} naturally leads.",
-                         f"Each is a path that starts inside {main_word} itself - consequences of the word you set."]))
-    gc = {cell for o in found if o["kind"] == "gift" and o["word"] != main_word for cell in o["cells"]}
-    ic = {cell for o in found if o["kind"] == "intent" and o["word"] != main_word for cell in o["cells"]}
-    cross = sorted(gc & ic)
-    if cross:
-        letters_x = [grid[r][c] for r, c in cross]
-        counts = Counter(letters_x)
-        top, top_k = counts.most_common(1)[0]
-        uniq = sorted(counts)
-        p.append(f"Crossroads: {len(cross)} spot{'s' if len(cross) != 1 else ''} on the cylinder belong to both a Gift and an Intent "
-                 f"- the places where what is offered and what is meant meet. The letters standing at those crossings are "
-                 f"{join_words(uniq)}. "
-                 + (f"{top} stands at {top_k} of them - {lm(top)} - making it the master key of this turn."
-                    if top_k > 1 else f"Each crossing is its own small turning point."))
-    if not p:
-        p.append("No mirrors, branches or crossroads formed - the Gifts and Intents keep to their own lanes on this turn. "
-                 "What is offered and what is meant are separate matters; don't confuse them.")
-    sections.append(("Mirrors, branches and crossroads", p))
-
-    # 6. Above and below the line ------------------------------------------------------------
-    above, below = [], []
-    for w, t, occ in gifts + intents:
-        _, _, avg = placement(occ[0])
-        (above if avg < 0 else below if avg > 0 else []).append((abs(avg), w))
-    p = []
-    if above:
-        above.sort()
-        p.append(f"Above the main line - what is arriving: {join_words(w for _, w in above[:6])}. "
-                 f"Nearest of these is {above[0][1]}, the next thing likely to reach you; "
-                 f"farthest is {above[-1][1]}, still forming.")
-    if below:
-        below.sort()
-        p.append(f"Below the main line - what is rooted, underneath, or already behind you: {join_words(w for _, w in below[:6])}. "
-                 f"{below[0][1]} lies closest to the surface; {below[-1][1]} is the deepest root.")
-    if above and below:
-        p.append(pick([f"With {len(above)} words above and {len(below)} below, the reading leans "
-                       f"{'toward the future' if len(above) > len(below) else 'toward the past and its roots' if len(below) > len(above) else 'evenly between past and future'}.",
-                       f"The balance - {len(above)} above, {len(below)} below - says this is "
-                       f"{'mostly about what comes next' if len(above) > len(below) else 'mostly about what has already shaped you' if len(below) > len(above) else 'as much about roots as about what is coming'}."]))
-    if p:
-        sections.append(("Above and below the line", p))
-
-    # 7. The numbers ---------------------------------------------------------------------------
-    p = []
-    gift_n = reduce_num(sum(word_num(w) for w, _, _ in gifts)) if gifts else None
-    intent_n = reduce_num(sum(word_num(w) for w, _, _ in intents)) if intents else None
-    whole = reduce_num(main_n + (gift_n or 0) + (intent_n or 0))
-    p.append(f"The main word: {main_n} - {main_title} ({NUMBER_KEY[main_n]}).")
-    if gift_n:
-        p.append(f"All the Gifts together reduce to {gift_n} - {NUMBER_NAME[gift_n]}. What is being given is, at heart, {NUMBER_KEY[gift_n]}.")
-    if intent_n:
-        p.append(f"All the Intents together reduce to {intent_n} - {NUMBER_NAME[intent_n]}. The will beneath is about {NUMBER_KEY[intent_n]}.")
-    if gift_n and intent_n:
-        if gift_n == intent_n:
-            p.append("Gift and Intent share one number: what is offered and why it is offered are perfectly aligned. That is rare - trust it.")
-        else:
-            p.append(f"Gift {gift_n} and Intent {intent_n} are {harmony(gift_n, intent_n)}.")
-    wt, wd, wg = C.NUMEROLOGY_THEMES[whole][0], C.NUMEROLOGY_THEMES[whole][1], C.NUMEROLOGY_THEMES[whole][2]
-    p.append(f"The whole reading - main word, Gifts and Intents together - comes to {whole}: {wt}. {wd}")
-    sections.append(("The numbers", p))
-
-    # 7b. The plain truth -------------------------------------------------------------------
-    sections.append(("The plain truth", plain_truth(main_word, gifts, intents, meanings)))
-
-    # 8. Counsel --------------------------------------------------------------------------------
-    p = []
-    kind, d = verdict(main_word, gifts, intents, meanings)
-
-    def wm(w):
-        t = gist(w, meanings, 6) if w else ""
-        return f"{w} ({t})" if t else (w or "")
-
-    g0 = gifts[0][0] if gifts else None
-    i0 = intents[0][0] if intents else None
-    if kind == "warn":
-        bad_g = d["gw"][0] if d["gw"] else None
-        bad_i = d["iw"][0] if d["iw"] else None
-        if bad_i:
-            p.append(f"The problem is the motive. {wm(bad_i)} is what's really driving this - deal with that before anything else.")
-        if bad_g:
-            p.append(f"Do not accept {wm(bad_g)} just because it's being offered.")
-        if g0 and g0 != bad_g:
-            p.append(f"Even {wm(g0)} - the strongest Gift - should be checked before you take it.")
-        p.append(f"Hold to {main_word} and don't let this turn pull you off it.")
-    elif kind == "good":
-        best_g = d["gg"][0] if d["gg"] else g0
-        p.append(f"Take {wm(best_g)}." if best_g else "Nothing new is handed over, but the motive is clean.")
-        if d["ig"] and d["iw"]:
-            p.append(f"The motive underneath is mostly on your side - {wm(d['ig'][0])} - "
-                     f"but keep an eye on {wm(d['iw'][0])}.")
-        elif d["ig"]:
-            p.append(f"The motive underneath - {wm(d['ig'][0])} - is on your side. This one is safe to accept.")
-        elif d["iw"]:
-            p.append(f"Accept it, but watch {wm(d['iw'][0])} underneath it.")
-        elif i0:
-            p.append(f"{wm(i0)} sits underneath it; nothing in it works against you.")
-        p.append(f"Let {main_word} be how you carry it.")
-    elif kind == "mixed":
-        good_w = (d["gg"] + d["ig"])[:1]
-        bad_w = (d["iw"] + d["gw"])[:1]
-        p.append(f"Take what's good{' - ' + wm(good_w[0]) if good_w else ''}. "
-                 f"Refuse what isn't{' - ' + wm(bad_w[0]) if bad_w else ''}. "
-                 f"Don't swallow this turn whole; sort it piece by piece, with {main_word} as your measure.")
-    else:
-        p.append(f"Nothing here pushes you either way. {main_word} is the only real signal - the choice is yours.")
-
-    # one clear order of action instead of two clashing pieces of advice
-    if whole == main_n:
-        p.append(f"Both the word and the whole reading land on {main_n}: {NUMBER_ACTION[main_n]}. {main_guide}")
-    else:
-        caveat = " - but only once the warning is dealt with" if kind == "warn" else ""
-        p.append(f"{main_word}'s own number, {main_n}, says {NUMBER_ACTION[main_n]}. "
-                 f"The whole reading, {whole}, says {NUMBER_ACTION[whole]}. "
-                 f"Do them in that order: first {NUMBER_ACTION[main_n]}, then {NUMBER_ACTION[whole]}{caveat}.")
-    q = pick(NUMBER_QUESTIONS[whole])
-    p.append(f"A question to carry with you: {q}")
-    label = {"warn": "a warning", "good": "a good sign", "mixed": "mixed", "neutral": "neutral"}[kind]
-    essence = [x for x in (f"given {g0}" if g0 else "", f"meant {i0}" if i0 else "") if x]
-    p.append(f"In one breath: {main_word}{', ' + ' and '.join(essence) if essence else ''} - {label} - "
-             f"resolving to {whole}, {NUMBER_KEY[whole]}.")
-    sections.append(("Counsel", p))
-    return sections
-
-
-def reading_text(sections, width=74):
-    """Plain-text version (ASCII, wrapped) for the downloadable file."""
-    out = []
-    for i, (head, paras) in enumerate(sections, 1):
-        out.append("")
-        out.append(f"  {C._ascii(head).upper()}")
-        out.append("  " + "-" * min(len(head), width))
-        for para in paras:
-            out += C._wrap(para, width=width, indent="  ")
-            out.append("")
-    return out
-
-
 NUMBER_ACTION = {
     1: "take the first step yourself",
     2: "move together, not alone",
@@ -489,211 +105,437 @@ NUMBER_ACTION = {
     8: "claim your power",
     9: "let the old chapter close",
 }
+SHORT_HARMONY = {
+    0: "the same number as {m} - it speaks directly to the main word",
+    1: "one step from {m}'s {n} - an easy, natural move",
+    2: "close to {m}'s {n} - it colors the main word",
+    3: "a stretch from {m}'s {n} - it widens the picture",
+    4: "nearly opposite {m}'s {n} - it pulls against the main word",
+}
 
 
-_TRAILING = {"a", "an", "the", "of", "to", "in", "into", "on", "for", "with", "and", "or", "so", "as",
-             "by", "at", "from", "that", "which", "is", "being", "its", "your", "their", "his", "her",
-             "who", "through", "about", "be", "or", "if", "but", "usually", "noted", "especially", "when", "where", "than", "are", "was"}
+def short_harmony(wn, main_n, main_word):
+    d = abs(wn - main_n)
+    return SHORT_HARMONY[min(d, 9 - d, 4)].format(m=main_word, n=main_n)
+
+
+# ------------------------------------------------------------------ meanings
+def meaning_of(w, meanings, n=110):
+    info = C.explain(w, meanings)
+    if not info["lines"]:
+        return None, info
+    label, text = info["lines"][0]
+    text = strip_end(re.sub(r"^\([^)]*\)\s*", "", text))
+    if len(text) > n:
+        text = text[: n - 1].rsplit(" ", 1)[0] + "..."
+    return (label, text), info
+
+
+_TRAILING = {"a", "an", "the", "of", "to", "in", "into", "on", "for", "with", "and", "or", "so", "as", "by", "at",
+             "from", "that", "which", "is", "being", "its", "your", "their", "his", "her", "who", "through", "about",
+             "be", "if", "but", "has", "have", "had", "can", "will", "usually", "noted", "especially", "when", "where", "than", "are", "was"}
 
 
 def gist(w, meanings, words=5):
-    """A tiny meaning for one word: its first clause, cut at a natural word boundary.
-    Returns '' when no clean short meaning exists."""
+    """A tiny meaning for one word: its first clause, cut at a natural word boundary ('' if none)."""
     m, _ = meaning_of(w, meanings, 200)
     if not m:
         return ""
-    text = m[1].replace('"', "").replace("'s ", "'s ")
+    text = m[1].replace('"', "")
     text = re.sub(r"\([^)]*\)", "", text)
-    text = re.split(r";|,| - | — |\. |:", text)[0].strip(" .")
-    if m[0] == "name" and ":" in m[1]:            # names: 'Hebrew: "grace"' -> 'grace'
+    text = re.split(r";| - | — |\. |:", text)[0].strip(" .")
+    first = text.split(",")[0].strip()
+    if len(first.split()) >= 3 or len(text.split()) <= words:
+        text = first if len(first.split()) >= 3 else text
+    if m[0] == "name" and ":" in m[1]:
         text = m[1].split(":", 1)[1].replace('"', "").strip(" .")
-    parts = text.split()
-    if len(parts) > words:
-        parts = parts[:words]
+    parts = text.split()[:words]
     while len(parts) > 1 and parts[-1].lower().strip(",.") in _TRAILING:
         parts.pop()
     text = " ".join(parts).strip(" ,.")
     if len(text) < 3 or re.search(r"\d|\bpers\b|^see |^imp$|^p\. ?p|^pl$|^obs", text, re.I):
         return ""
-    words_ = text.split()
-    if not (len(words_) > 1 and sum(x[:1].isupper() for x in words_) == len(words_)):   # keep "Oh My God"
+    ws = text.split()
+    keep_caps = (len(ws) > 1 and all(x[:1].isupper() for x in ws)) or m[0] in ("mystic", "name", "title")
+    if not keep_caps:
         text = lower_first(text)
     return text
 
 
-def condensed(main_word, gifts, intents, meanings):
-    """The whole reading in a few sentences: every word found, each with a short meaning,
-    then what it all means together."""
-    main_n = C.numerology(main_word)[0]
-    g = [w for w, _, _ in gifts if w != main_word]
-    i = [w for w, _, _ in intents if w != main_word]
-    gift_n = reduce_num(sum(word_num(w) for w in g)) if g else 0
-    intent_n = reduce_num(sum(word_num(w) for w in i)) if i else 0
-    whole = reduce_num(main_n + gift_n + intent_n)
-
-    def tagged(ws):
-        out = []
-        for w in ws:
-            t = gist(w, meanings)
-            out.append(f"{w} ({t})" if t else w)
-        return join_words(out)
-
-    mg = gist(main_word, meanings, 7)
-    head = f"{main_word}{' (' + mg + ')' if mg else ''}"
-    if not g and not i:
-        return (f"{head} stands alone - no other words formed around it. "
-                f"The meaning of it all: the answer is the word itself, and it comes down to {NUMBER_KEY[main_n]} - "
-                f"{NUMBER_ACTION[main_n]}.")
-
-    sentences = []
-    if g:
-        sentences.append(f"{head} is given {tagged(g)}.")
-    if i:
-        sentences.append(f"{'Beneath it, the intent' if g else head + ' carries the intent'} is {tagged(i)}.")
-
-    def best(ws):
-        for w in ws[:8]:
-            t = gist(w, meanings, 6)
-            if t:
-                return w, t
-        return (ws[0], "") if ws else (None, "")
-
-    gw, gt = best(g)
-    iw, it = best(i)
-    through = f"through {main_word}{' - ' + mg + ' -' if mg else ''}"
-    if g and i:
-        meaning = (f"{through} you are being offered {gw}{' (' + gt + ')' if gt else ''}, "
-                   f"but the real force underneath is {iw}{' (' + it + ')' if it else ''}")
-    elif g:
-        meaning = f"{through} you are being offered {gw}{' (' + gt + ')' if gt else ''}, with nothing hidden behind it"
-    else:
-        meaning = f"{through} nothing is handed over yet - the force at work is {iw}{' (' + it + ')' if it else ''}"
-    sentences.append(f"The meaning of it all: {meaning}. It comes down to {whole}, {NUMBER_KEY[whole]} - "
-                     f"{NUMBER_ACTION[whole]}.")
-    truth = plain_truth(main_word, gifts, intents, meanings)
-    sentences.append(" ".join(truth[:3]))
-    return " ".join(sentences)
+def wm(w, meanings, words=5):
+    """WORD (short meaning)"""
+    t = gist(w, meanings, words)
+    return f"{w} ({t})" if t else w
 
 
-# ------------------------------------------------------------------ the plain truth (no sugar-coating)
+# ------------------------------------------------------------------ strict tone: only clearly dark / clearly good words
 WARN_WORDS = set("""
-ABYSS ACHE ACHES ACID AFRAID AGONY AIL AILS ALONE ANGER ANGST ANGRY ARSON ATTACK AWFUL AXE BAD BADLY BAIT BAN BANE BARF BASH
-BEAT BEG BICKER BILE BITCH BITCHY BITE BITTER BLAME BLAST BLEAK BLEED BLIND BLOOD BLOODY BLOW BLUNT BOGUS BOMB BONDS BORE BOSH
-BRAWL BREAK BROKE BROKEN BRUTE BULLY BURN BURNT BUST CAGE CAGED CAN'T CHAIN CHAOS CHEAT CHOKE CON CONS CORPSE COST CRASH CRAVE
-CRIME CRIPPLE CROOK CRUEL CRUSH CRY CRYPT CURSE CURSED CUT DAMN DANGER DARK DEAD DEATH DEBT DECAY DEFEAT DEMON DENY DESPAIR
-DEVIL DIE DIED DIES DIRE DIRT DIRTY DOOM DOOMED DOWN DRAIN DREAD DROWN DRUNK DUMB DUMP DUNCE DUPE DYING EERIE EGO ENEMY ENVY
-ERR ERROR EVIL EXILE FAIL FAILS FAKE FALL FALSE FAULT FEAR FEUD FIEND FIGHT FIRE FLAW FLEE FLOP FOE FOES FOOL FORGET FRAUD
-FREAK FRET FURY GALL GHOST GLOOM GLUM GORE GRAVE GREED GRIEF GRIM GRIME GROAN GRUDGE GUILT GUN HARM HATE HATED HAVOC HEX HOAX
-HOLLOW HOSTILE HURT HURTS ILL ILLS IRE JAIL JEALOUS JEER JERK JUNK KILL KILLS LACK LAME LIAR LIE LIES LIMP LOATHE LONELY
-LOSE LOSER LOSS LOST LOUSE LURE LUST MAD MALICE MEAN MESS MISS MOAN MOB MOCK MOLD MOURN MUD MURDER NAG NASTY NEED NUMB OPP
-OPPS OUST PAIN PANIC PERIL PEST PISS PISSED PLAGUE POISON POOR PREY PRICK PRISON PUNISH PUS RAGE RAID RANT RASH RAT RATS
-RAZE ROB ROT ROTTEN RUDE RUIN RUINS RUST SAD SADLY SCAM SCAR SCARE SCARY SCORN SCREAM SHAME SHAM SHOCK SHOT SHUN SICK SIN
-SINS SKID SLAP SLASH SLAVE SLAY SLUT SMEAR SNARE SNEER SNUB SOB SORE SORROW SORRY SPITE SPOIL STAB STAIN STEAL STING STINK
-STOLE STRIFE STRIKE STUPID SUCK SUCKS SUFFER SUS SWINDLE TABOO TEAR TEARS TERROR THEFT THIEF THREAT TOIL TOMB TORN TORMENT
-TOXIC TRAP TRICK TROLL TWAT UGLY UGH UPSET URGE VAIN VENOM VEX VICE VILE VIRUS VOID WAIL WANE WAR WARS WASTE WASTED WEAK
-WEEP WHORE WICKED WIDOW WOE WOES WOUND WRATH WRECK WRONG YIKES
-""".split())
+ABUSE AGONY ANGER ANGRY ARSON ASSAULT ATTACK BETRAY BLAME BLEED BRUTAL BULLY CHEAT CHEATS CORPSE CRIME CRUEL CURSE CURSED
+CURSES DEATH DECAY DECEIT DEFEAT DEMON DESPAIR DEVIL DOOM DOOMED DREAD DROWN DYING ENEMY ENVY EVIL EXILE FAIL FAILED FAILS
+FAKE FEAR FEUD FIEND FRAUD FURY GREED GRIEF GUILT GUN GUNS HARM HATE HATED HATRED HAVOC HEX HEXES HOAX HOSTILE HURT HURTS
+INSULT JAIL KILL KILLED KILLS LIAR LIARS LIE LIES LONELY LOSS LUST MALICE MENACE MOCK MOURN MURDER NASTY PAIN PANIC PERIL
+PLAGUE POISON PREY PRISON PUNISH RAGE RAID RAPE ROB ROBBED ROBS ROT ROTTEN RUIN RUINED RUINS SATAN SCAM SCAR SCORN SHAME
+SIN SINS SLAVE SORROW SPITE STAB STEAL STOLE STOLEN STRIFE SUFFER SWINDLE TERROR THEFT THIEF THREAT TORMENT TORTURE TOXIC
+TRAP TRAPS TRICK TRAITOR VENOM VICE VILE VIOLENT VIRUS WAR WARS WEEP WICKED WOE WOES WOUND WOUNDS WRATH WRECK WRONG YOB
+SAD ILL DIE DIED DIES DEAD BANE GORE GRIM HELL FOE FOES SORE ACHE ACHES GLOOM BLEAK DIRE TOMB IRE LOSE LOST LOSER BROKEN
+SNARE SPY SPIES BRUTE GREEDY STING SLAIN SLAY? HOSTAGE KIDNAP TAINT TAINTED VOID HOLLOW CRUSH CRUSHED BURNED BITTER
+""".replace("SLAY? ", "").split())
 GOOD_WORDS = set("""
-ABLE ACE ADORE ADORED AID ALIVE ALLY AMEN ANGEL ANGELS ARISE ART ASCEND AURA AWE AWW BABE BAE BAG BALM BASK BEAM BEST BET
-BLESS BLISS BLOOM BLOSSOM BOLD BONUS BOO BOOM BOSS BRAVE BRAVO BREAD BRIGHT BUD BUDDY BUSSIN CALM CARE CHAMP CHARM CHEER
-CHILL CLEAN CLEAR CLUTCH COZY CROWN CURE DEAR DEFT DIVINE DOPE DREAM DRIP EARN EASE EASY EDEN ELATE ENJOY EPIC EXALT FAIR
-FAITH FAM FAME FAVOR FEAST FINE FIRE FIT FLY FOND FREE FRESH FRIEND FUN GAIN GAINS GEM GEMS GIFT GIFTS GIVE GLAD GLEE GLOW
-GOAL GOALS GOAT GOD GOLD GOOD GRACE GRAIL GRAND GREAT GROW GROWN GUIDE HAIL HALO HAPPY HEAL HEALS HEART HEAVEN HELP HERO
-HONEY HONOR HOPE HUG HUGS HYPE ICONIC IDEAL JADE JOY JOYS KIND KING KISS LEGIT LIFE LIGHT LIKE LIT LOVE LOVED LOYAL LUCK
-LUCKY LUSH MAGIC MENTOR MERCY MERRY MINT MIRTH MUSE NEAT NICE NOBLE NOVA OASIS OPAL PAL PARTY PEACE PEARL PERK PLUS POWER
-PRAISE PRIZE PROUD PURE QUEEN RAD REAL RELIEF REST RICH RISE RIZZ ROSE RUBY SAFE SAGE SAINT SALVE SAVE SAVED SEED SHINE
-SLAY SMART SMILE SOAR SOUL SPARK STAR STARS STRONG SUN SURE SWAG SWEET THANK THRIVE TREAT TRUE TRUST TRUTH UNITY VALOR
-VIBE VIBES VICTOR VOW WARM WEALTH WED WELL WIN WINS WISDOM WISE WON WONDER WORTH WOW YAS YASS YAY YES YUM ZEN ZEST
+ADORE ALIVE ALLY AMEN ANGEL ANGELS ASCEND BLESS BLESSED BLISS BLOOM BLOSSOM BRAVE CALM CARE CHARM CHEER CURE DIVINE
+EASE EDEN FAITH FAVOR FEAST FREE FRIEND FRIENDS GAIN GEM GEMS GIFT GIFTS GLAD GLEE GLORY GLOW GOLD GOOD GRACE GRAIL GROW
+GROWTH HALO HAPPY HEAL HEALED HEALS HEALTH HEART HEAVEN HELP HERO HONOR HOPE HUG HUGS JOY JOYS KIND KINDLY KISS LIGHT
+LOVE LOVED LOYAL LUCK LUCKY MERCY MERRY MIRTH NOBLE OASIS PEACE PEARL PRAISE PRIZE PROUD PURE RELIEF RICH RISE SAFE
+SAINT SALVE SAVE SAVED SHINE SMILE SOAR SOUL SPARK THRIVE TREAT TRUE TRUST TRUTH UNITY VALOR VICTOR WARM WEALTH WIN
+WINS WISDOM WISE WON WONDER WORTH YES ZEST
+FUN YAY BOON ACE AID AIDS BEST SUN SUNNY DAWN SWEET HONEY BRAVO HOLY SACRED ZEN SERENE GRIN LAUGH LAUGHS CHEERS GIVE GIVEN
+SHARE HEALER ADORED BELOVED DEAR DARLING SOULS ANGELIC GIFTED THANK THANKS HAVEN HOME HOMES REST RESCUE REVIVE RENEW
 """.split())
-WARN_MEANING = re.compile(r"\b(harm|hurt|pain|painful|death|dead|die|kill|violent|violence|attack|injur\w*|wound|disease|illness|sick|"
-                          r"poison|evil|wicked|cruel|insult|enemy|fear|terror|danger|threat|fail|failure|loss|lose|"
-                          r"mistake|deceiv|cheat|lie |lying|steal|theft|rob|destroy|ruin|decay|rot|grief|sorrow|anger|angry|"
-                          r"hostil|disgust|shame|guilt|curse|demon|devil|abuse|annoy|irritat|bitter|suspicious|untrust|"
-                          r"torn violently|tear or be torn|drunk|intoxicat|offensive|vulgar)", re.I)
-GOOD_MEANING = re.compile(r"\b(love|loved|loving|joy|joyful|happy|happiness|peace|peaceful|heal|healing|cheer|cheerful|"
-                          r"pleasant|praise|admiration|admire|precious|treasured?|beauty|beautiful|grace|graceful|calm|"
-                          r"bless|blessed|blessing|divine|wisdom|wise|bright|success|successful|reward|gift|friend|"
-                          r"friendship|affection|sweetheart|excellent|amazing|gentle|protect|protection|abundance|"
-                          r"wealth|honor|courage|strength|flourish|growth|rebirth|enlightenment|perfect|delight|"
-                          r"enthusiastic yes|victory|triumph|hope|kindness|generous|radiant)\b", re.I)
 
 
-AMBIGUOUS = set("FIRE SLAY DOWN NEED MISS URGE COST SICK BOMB GHOST TABOO BLUNT STRIKE SHOT FALL CUT BREAK BEAT BLOW "
-                "DARK TEAR TEARS MEAN LACK BORE CRY DUMP SKID LIMP RASH DIRT MUD MOLD MOB CON CONS DAMN".split())
-WARN_WORDS -= AMBIGUOUS
-
-
-def tone(w, meanings):
-    """+1 good sign, -1 warning, 0 neutral."""
+def tone(w, meanings=None):
+    """+1 clearly good, -1 clearly dark, 0 everything else. No guessing from definitions."""
     if w in WARN_WORDS:
         return -1
     if w in GOOD_WORDS:
         return 1
-    m, _ = meaning_of(w, meanings, 400)
-    if not m:
-        return 0
-    text = re.sub(r"\([^)]*\)", "", m[1])
-    bad, good = bool(WARN_MEANING.search(text)), bool(GOOD_MEANING.search(text))
-    if bad and not good:
-        return -1
-    if good and not bad:
-        return 1
     return 0
 
 
-def verdict(main_word, gifts, intents, meanings):
-    """Return (kind, details) where kind is 'warn', 'good', 'mixed' or 'neutral'."""
-    g = [w for w, _, _ in gifts if w != main_word]
-    i = [w for w, _, _ in intents if w != main_word]
-    d = {"gw": [w for w in g if tone(w, meanings) < 0], "gg": [w for w in g if tone(w, meanings) > 0],
-         "iw": [w for w in i if tone(w, meanings) < 0], "ig": [w for w in i if tone(w, meanings) > 0],
-         "main": tone(main_word, meanings)}
-    warn = len(d["gw"]) + 1.5 * len(d["iw"]) + (1 if d["main"] < 0 else 0)
-    good = len(d["gg"]) + 1.5 * len(d["ig"]) + (1 if d["main"] > 0 else 0)
-    if warn == 0 and good == 0:
-        kind = "neutral"
-    elif warn >= good * 1.5:
-        kind = "warn"
-    elif good >= warn * 1.5:
-        kind = "good"
+# ------------------------------------------------------------------ one analysis of the spin, shared by everything
+def placement(o):
+    rows = [r - C.CENTER for r, _ in o["cells"]]
+    avg = sum(rows) / len(rows)
+    if all(r == 0 for r in rows):
+        return "on", 0, "On the main line - present now"
+    if any(r == 0 for r in rows):
+        return "on", avg, "Growing out of the main line - a direct result of the word"
+    d = abs(avg)
+    if avg < 0:
+        txt = ("Just above the line - arriving soon" if d <= 3 else
+               "Above the line - on its way" if d <= 7 else "High above - still forming")
+        return "above", avg, txt
+    txt = ("Just below the line - close to the root" if d <= 3 else
+           "Below the line - in the foundations" if d <= 7 else "Deep below - an old root")
+    return "below", avg, txt
+
+
+def analyze(main_word, active_len, grid, found, gifts, intents, meanings):
+    a = {"main": main_word}
+    a["main_n"], a["main_title"], a["main_desc"], a["main_guide"] = C.numerology(main_word)
+    a["g"] = [x for x in gifts if x[0] != main_word]
+    a["i"] = [x for x in intents if x[0] != main_word]
+    gw = [w for w, _, _ in a["g"]]
+    iw = [w for w, _, _ in a["i"]]
+    a["gift_n"] = reduce_num(sum(word_num(w) for w in gw)) if gw else 0
+    a["intent_n"] = reduce_num(sum(word_num(w) for w in iw)) if iw else 0
+    a["whole"] = reduce_num(a["main_n"] + a["gift_n"] + a["intent_n"]) or a["main_n"]
+    # tone
+    a["bad_g"] = [w for w in gw if tone(w) < 0]
+    a["good_g"] = [w for w in gw if tone(w) > 0]
+    a["bad_i"] = [w for w in iw if tone(w) < 0]
+    a["good_i"] = [w for w in iw if tone(w) > 0]
+    warn = len(a["bad_g"]) + 1.5 * len(a["bad_i"]) + (1 if tone(main_word) < 0 else 0)
+    good = len(a["good_g"]) + 1.5 * len(a["good_i"]) + (1 if tone(main_word) > 0 else 0)
+    a["kind"] = ("neutral" if warn == 0 and good == 0 else "warn" if warn >= good * 1.5 else
+                 "good" if good >= warn * 1.5 else "mixed")
+    # special features
+    others = [o for o in found if o["word"] != main_word]
+    a["main_elsewhere"] = [o for o in found if o["word"] == main_word and
+                           not all(r == C.CENTER for r, _ in o["cells"])]
+    a["two_way"] = sorted(set(gw) & set(iw))
+    gift_cells = {frozenset(o["cells"]): o["word"] for o in others if o["kind"] == "gift"}
+    mirrors = []
+    for o in others:
+        if o["kind"] == "intent":
+            m = gift_cells.get(frozenset(o["cells"]))
+            if m and m != o["word"] and (m, o["word"]) not in mirrors:
+                mirrors.append((m, o["word"]))
+    a["mirrors"] = mirrors
+    a["repeats"] = [(w, len(occ)) for w, _, occ in a["g"] + a["i"] if len(occ) > 1]
+    a["resonant"] = [w for w in gw + iw if word_num(w) == a["main_n"]]
+    a["mystic"] = [w for w, t, _ in a["g"] + a["i"] if t == "mystic"]
+    branches = []
+    for o in others:
+        for r, c in o["cells"]:
+            if r == C.CENTER and c < active_len and not all(rr == C.CENTER for rr, _ in o["cells"]):
+                branches.append((o["word"], main_word[c], c))
+                break
+    a["branches"] = list(dict.fromkeys(branches))
+    zones = {"above": [], "below": [], "on": []}
+    for w, _, occ in a["g"] + a["i"]:
+        z, avg, _ = placement(occ[0])
+        zones[z].append((abs(avg), w))
+    for z in zones:
+        zones[z].sort()
+    a["zones"] = zones
+    return a
+
+
+# ------------------------------------------------------------------ phrase pools (varied per spin)
+P_BAD_I = [
+    "The motive underneath is {x} - that's the part working against you.",
+    "Read backward, it shows {x}. That's the hidden problem.",
+    "{x} is moving under the surface; someone's intent here isn't clean.",
+    "Underneath it all sits {x}. Don't ignore that.",
+]
+P_BAD_G = [
+    "{x} is being offered - refuse it.",
+    "Of what's coming, {x} is the thing to turn down.",
+    "{x} arrives looking like a gift. It isn't.",
+    "Say no to {x}, however it's dressed up.",
+]
+P_GOOD_G = [
+    "{x} is real - take it.",
+    "The good here is {x}; that part you can trust.",
+    "{x} is worth accepting.",
+    "What's truly being given is {x}.",
+]
+P_GOOD_I = [
+    "Underneath, {x} - the motive is on your side.",
+    "The intent is clean: {x}.",
+    "What drives this is {x}, and it's working for you.",
+]
+P_SPLIT_I = [
+    "The motive is split: {g} pulls for you, {b} pulls against you.",
+    "Two forces sit underneath - {g} on your side, {b} against it.",
+]
+P_NEUTRAL = [
+    "The truth: this turn is NEUTRAL - nothing clearly dark, nothing clearly blessed.",
+    "The truth: this turn is NEUTRAL - no warning and no blessing showed up.",
+    "The truth: this turn is NEUTRAL - the cylinder isn't leaning either way.",
+    "The truth: this turn is NEUTRAL - no clear omen in either direction.",
+    "The truth: this turn is NEUTRAL - plain ground, no hazard and no windfall.",
+]
+P_NEUTRAL_TAIL = [
+    "{x} is the clearest signal here; what you do with it is your call.",
+    "The weight sits on {x} - read that one closely and decide for yourself.",
+    "If anything speaks loudest, it's {x}. The rest is up to you.",
+    "Nothing forces your hand. {x} is the word to think about.",
+    "Watch {x}; it carries the most meaning on this turn, but it doesn't decide for you.",
+]
+P_HEAD = {
+    "warn": ["The truth: this is a WARNING.", "The truth: this is a WARNING - take it seriously.",
+             "The truth: this is a WARNING, plain and simple."],
+    "good": ["The truth: this is a GOOD SIGN.", "The truth: this is a GOOD SIGN - it's real.",
+             "The truth: this is a GOOD SIGN, no catch in sight."],
+    "mixed": ["The truth: this is MIXED - good and trouble in the same turn.",
+              "The truth: this is MIXED - some of it helps you, some of it doesn't.",
+              "The truth: this is MIXED - sort it carefully."],
+}
+
+
+def truth_lines(a, meanings, rng):
+    if a["kind"] == "neutral":
+        pool = [w for w, _, _ in a["g"] + a["i"] if gist(w, meanings)]
+        if not pool:
+            return [rng.choice(P_NEUTRAL), "Nothing is pushing you; you decide."]
+        # the most meaningful word: mystic/slang first, then the longest defined word
+        tiers = {w: t for w, t, _ in a["g"] + a["i"]}
+        key = sorted(pool, key=lambda w: (tiers[w] not in ("mystic", "slang"), -len(w), w))[0]
+        return [rng.choice(P_NEUTRAL), rng.choice(P_NEUTRAL_TAIL).format(x=wm(key, meanings))]
+    tag = lambda ws: join_words(wm(w, meanings) for w in ws[:3])
+    out = [rng.choice(P_HEAD[a["kind"]])]
+    if a["bad_i"] and a["good_i"]:
+        out.append(rng.choice(P_SPLIT_I).format(g=tag(a["good_i"]), b=tag(a["bad_i"])))
+    elif a["bad_i"]:
+        out.append(rng.choice(P_BAD_I).format(x=tag(a["bad_i"])))
+    elif a["good_i"]:
+        out.append(rng.choice(P_GOOD_I).format(x=tag(a["good_i"])))
+    if a["bad_g"]:
+        out.append(rng.choice(P_BAD_G).format(x=tag(a["bad_g"])))
+    if a["good_g"]:
+        out.append(rng.choice(P_GOOD_G).format(x=tag(a["good_g"])))
+    if tone(a["main"]) < 0:
+        out.append(f"The main word itself, {a['main']}, is dark - be honest about why you chose it.")
+    if len(out) == 1:   # verdict came from the main word alone
+        if tone(a["main"]) > 0:
+            out.append(f"{a['main']} itself is a clearly good word, and nothing dark formed around it.")
+        else:
+            out.append(f"{a['main']} itself carries it; no other clearly marked word formed around it.")
+    return out
+
+
+# ------------------------------------------------------------------ the signature: what makes THIS spin unusual
+def signature(a, meanings, rng):
+    m = a["main"]
+    feats = []
+    if a["main_elsewhere"]:
+        o = a["main_elsewhere"][0]
+        feats.append(f"{m} appears a second time on the cylinder, reading {o['dir'].lower()} - "
+                     f"the word you set is echoing back at you. That almost never happens.")
+    if a["two_way"]:
+        w = a["two_way"][0]
+        feats.append(f"{wm(w, meanings)} shows up as both a Gift and an Intent - what you're given and why "
+                     f"are the same thing here.")
+    if a["mirrors"]:
+        gw, iw = a["mirrors"][0]
+        feats.append(f"The same letters read {wm(gw, meanings)} forward and {wm(iw, meanings)} backward - "
+                     f"the gift and its motive are one strip of letters seen from two sides.")
+    if a["gift_n"] and a["gift_n"] == a["intent_n"] == a["main_n"]:
+        feats.append(f"The Gifts, the Intents and {m} all reduce to {a['main_n']} - a rare triple alignment.")
+    elif a["gift_n"] and a["gift_n"] == a["intent_n"]:
+        feats.append(f"The Gifts and the Intents both reduce to {a['gift_n']} ({NUMBER_KEY[a['gift_n']]}) - "
+                     f"what's offered and why are in step.")
+    if a["repeats"]:
+        w, n = max(a["repeats"], key=lambda x: x[1])
+        feats.append(f"{wm(w, meanings)} appears {n} times - a message repeated is a message underlined.")
+    if a["mystic"]:
+        w = a["mystic"][0]
+        feats.append(f"A sacred word surfaced: {wm(w, meanings, 7)}.")
+    if not a["g"] and not a["i"]:
+        feats.append(f"The cylinder is silent - no other word formed around {m}. The word stands alone.")
+    if a["branches"]:
+        w, ch, c = a["branches"][0]
+        feats.append(f"{wm(w, meanings)} grows straight out of the {ch} in {m} - a direct consequence of the word you set.")
+    ng, ni = len(a["g"]), len(a["i"])
+    if ng and ni and (ng >= 2 * ni or ni >= 2 * ng):
+        feats.append(f"{'Gifts' if ng > ni else 'Intents'} heavily outnumber "
+                     f"{'Intents' if ng > ni else 'Gifts'} ({max(ng, ni)} to {min(ng, ni)}) - "
+                     f"{'far more is offered than asked' if ng > ni else 'far more is moving underneath than on the surface'}.")
+    if a["resonant"]:
+        w = a["resonant"][0]
+        feats.append(f"{wm(w, meanings)} carries the same number as {m} ({a['main_n']}), so it speaks to the main word directly.")
+    if not feats:
+        feats.append(f"Nothing unusual broke the pattern on this turn - a plain, steady reading for {m}.")
+    return feats[:2]
+
+
+# ------------------------------------------------------------------ the reading
+def build_reading(main_word, active_len, offsets, grid, found, gifts, intents, meanings):
+    """Return [(heading, [paragraphs])] - short, precise, and specific to this exact spin."""
+    seed = int(hashlib.md5(f"{offsets}|{active_len}|{len(found)}".encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    a = analyze(main_word, active_len, grid, found, gifts, intents, meanings)
+    m, mn = main_word, a["main_n"]
+    secs = []
+
+    # 1. Signature - opens with what is unusual about this spin
+    secs.append(("The signature of this spin", [" ".join(signature(a, meanings, rng))]))
+
+    # 2. The word
+    mg = gist(m, meanings, 9)
+    letters = list(m)
+    word_p = (f"{m}{' means ' + mg if mg else ' is not a dictionary word - it speaks through its letters alone'}. "
+              f"Its number is {mn}, {a['main_title']}: {lower_first(a['main_desc'])} "
+              f"It opens with {letters[0]} ({lm(letters[0])})"
+              + (f" and closes with {letters[-1]} ({lm(letters[-1])})." if len(letters) > 1 else "."))
+    secs.append((f"The word - {m}", [word_p]))
+
+    # 3 / 4. Given and meant - top three each, one precise sentence per word
+    def word_lines(groups, kind):
+        lines = []
+        for w, _, occ in groups[:3]:
+            o = occ[0]
+            _, _, where = placement(o)
+            t = gist(w, meanings, 8)
+            line = f"{end(w + (' - ' + t if t else ''))} {where}"
+            if kind == "intent":
+                ring = "".join(grid[r][c] for r, c in sorted(o["cells"], key=lambda rc: rc[1]))
+                line += f"; on the rings it reads {ring}"
+            line += f". Number {word_num(w)}, {short_harmony(word_num(w), mn, m)}."
+            lines.append(line)
+        rest = [w for w, _, _ in groups[3:9]]
+        if rest:
+            lines.append(f"Also present: {join_words(rest)}{' and more' if len(groups) > 9 else ''}.")
+        return lines
+
+    if a["g"]:
+        secs.append((f"What is given ({len(a['g'])})", word_lines(a["g"], "gift")))
+    if a["i"]:
+        secs.append((f"What is meant ({len(a['i'])})", word_lines(a["i"], "intent")))
+
+    # 5. As above, so below
+    z = a["zones"]
+    p = []
+    if z["above"] or z["below"]:
+        if z["above"]:
+            p.append(f"In the light above the line - what is arriving: {join_words(w for _, w in z['above'][:5])}. "
+                     f"Closest is {z['above'][0][1]}.")
+        if z["below"]:
+            p.append(f"In the dark below - what is rooted or already behind you: {join_words(w for _, w in z['below'][:5])}. "
+                     f"Deepest is {z['below'][-1][1]}.")
+        na, nb = len(z["above"]), len(z["below"])
+        if na != nb:
+            p.append(f"With {na} above and {nb} below, this turn is mostly about "
+                     f"{'what comes next' if na > nb else 'what already shaped you'}.")
+        secs.append(("As above, so below", [" ".join(p)]))
+
+    # 6. Counsel - follows the verdict, one clear order of action, a question
+    p = []
+    k = a["kind"]
+    if k == "warn":
+        if a["bad_i"]:
+            p.append(f"Deal with {wm(a['bad_i'][0], meanings)} first - that's the root of it.")
+        if a["bad_g"]:
+            p.append(f"Turn down {wm(a['bad_g'][0], meanings)}.")
+        p.append(f"Hold to {m} and don't let this turn pull you off it.")
+    elif k == "good":
+        best = (a["good_g"] or [w for w, _, _ in a["g"] if gist(w, meanings)] or [None])[0]
+        if best:
+            p.append(f"Accept {wm(best, meanings)}.")
+        if a["bad_i"]:
+            p.append(f"Keep one eye on {a['bad_i'][0]} underneath.")
+        p.append(f"Carry it the way {m} would.")
+    elif k == "mixed":
+        good_w = (a["good_g"] + a["good_i"])[:1]
+        bad_w = (a["bad_i"] + a["bad_g"])[:1]
+        keep = good_w[0] if good_w else "what helps"
+        drop = bad_w[0] if bad_w else "what doesn't"
+        p.append(f"Keep {keep}, drop {drop} - take this turn apart piece by piece.")
     else:
-        kind = "mixed"
-    return kind, d
+        top = (a["g"] or a["i"] or [(None,)])[0][0]
+        p.append(f"Nothing forces your hand{'; ' + top + ' is the strongest signal' if top else ''}. Choose deliberately.")
+    w_n = a["whole"]
+    if w_n == mn:
+        p.append(f"{m} and the whole reading agree on {mn}: {NUMBER_ACTION[mn]}.")
+    else:
+        caveat = ", once the warning is handled" if k == "warn" else ""
+        p.append(f"Order of action: first {NUMBER_ACTION[mn]} ({m}'s {mn}), then {NUMBER_ACTION[w_n]} "
+                 f"(the whole reading's {w_n}){caveat}.")
+    p.append(f"Carry this question: {rng.choice(NUMBER_QUESTIONS[w_n])}")
+    secs.append(("Counsel", [" ".join(p)]))
+    return secs
 
 
-def plain_truth(main_word, gifts, intents, meanings):
-    """A blunt verdict: warning, good sign, or mixed - with the words that make it so."""
-    kind, d = verdict(main_word, gifts, intents, meanings)
-    gw, gg, iw, ig, main_t = d["gw"], d["gg"], d["iw"], d["ig"], d["main"]
+def condensed(main_word, gifts, intents, meanings, offsets=None, active_len=None, grid=None, found=None):
+    """The brief: every word with a short meaning, the meaning of it all, and the truth (said only here)."""
+    seed = int(hashlib.md5(f"{offsets}|{active_len}|{len(found or [])}|brief".encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    a = analyze(main_word, active_len or len(main_word), grid, found or [], gifts, intents, meanings)
+    g = [w for w, _, _ in a["g"]]
+    i = [w for w, _, _ in a["i"]]
+    mg = gist(main_word, meanings, 7)
+    head = f"{main_word}{' (' + mg + ')' if mg else ''}"
+    tagged = lambda ws: join_words(wm(w, meanings) for w in ws)
+    out = []
+    if not g and not i:
+        out.append(f"{head} stands alone - no other words formed around it.")
+    else:
+        if g:
+            out.append(f"{head} is given {tagged(g)}.")
+        if i:
+            out.append(f"{'Beneath it, the intent is' if g else head + ' carries the intent'} {tagged(i)}.")
+    gw = next(((w, gist(w, meanings, 6)) for w in (a["good_g"] + g)[:8] if gist(w, meanings, 6)), (g[0], "") if g else (None, ""))
+    iw = next(((w, gist(w, meanings, 6)) for w in (a["bad_i"] + i)[:8] if gist(w, meanings, 6)), (i[0], "") if i else (None, ""))
+    fmt = lambda p: f"{p[0]} ({p[1]})" if p[1] else p[0]
+    if gw[0] and iw[0]:
+        core = f"{main_word} brings you {fmt(gw)}, and the force underneath is {fmt(iw)}"
+    elif gw[0]:
+        core = f"{main_word} brings you {fmt(gw)}, with nothing hidden behind it"
+    elif iw[0]:
+        core = f"nothing is handed over yet - the force at work is {fmt(iw)}"
+    else:
+        core = f"the answer is {main_word} itself"
+    w_n = a["whole"]
+    out.append(f"The meaning of it all: {core}. It comes down to {w_n}, {NUMBER_KEY[w_n]} - {NUMBER_ACTION[w_n]}.")
+    out.append(" ".join(truth_lines(a, meanings, rng)))
+    return " ".join(out)
 
-    def tag(ws, n=5):
-        out = []
-        for w in ws[:n]:
-            t = gist(w, meanings, 5)
-            out.append(f"{w} ({t})" if t else w)
-        return join_words(out)
 
-    lines = []
-    if kind == "neutral":
-        return ["The truth: this turn is neutral - no clear warning, no clear blessing. "
-                "Nothing here is pushing you either way; what happens next is on you."]
-    lines.append({"warn": "The truth: this is a WARNING.", "good": "The truth: this is a GOOD SIGN.",
-                  "mixed": "The truth: this is MIXED - real good and real trouble in the same turn."}[kind])
-    if iw and ig:
-        lines.append(f"The motive is split: {tag(ig)} {'works' if len(ig) == 1 else 'work'} for you, but "
-                     f"{tag(iw)} {'works' if len(iw) == 1 else 'work'} against you. Not everyone behind this wants the same thing.")
-    elif iw:
-        lines.append(f"Watch the motive: the intent underneath carries {tag(iw)}. "
-                     f"Something - or someone - in this situation is not acting in your favor, and it won't announce itself.")
-    elif ig:
-        lines.append(f"The motive behind it is sound: {tag(ig)}. The reason underneath is on your side.")
-    if gw:
-        lines.append(f"Not everything coming at you is welcome: {tag(gw)} "
-                     f"{'is' if len(gw) == 1 else 'are'} among the Gifts. Don't accept everything you're handed.")
-    if gg:
-        lines.append(f"What's genuinely good: {tag(gg)}. That part is real - take it.")
-    if main_t < 0:
-        lines.append(f"Even the main word, {main_word}, leans dark. Be honest about why you set it.")
-    if kind == "warn":
-        lines.append("Don't explain it away. Act on it.")
-    return lines
+def reading_text(sections, width=74):
+    out = []
+    for head, paras in sections:
+        out += ["", f"  {C._ascii(head).upper()}", "  " + "-" * min(len(head), width)]
+        for para in paras:
+            out += C._wrap(para, width=width, indent="  ") + [""]
+    return out
