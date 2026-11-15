@@ -51,17 +51,24 @@ When a word is dialed onto the main row, the other 25 rows around the cylinder l
 - **Hide nested words** — keeps EAR from cluttering the list when HEART is found (can be turned off).
 - **Ring dials** — ▲ / ▼ for each ring, side by side even on a phone.
 - **Random Spin** and **Align Word** (type up to 6 letters, press Enter).
+- **The reading in brief** — every word found with a short plain meaning, *the meaning of it all*, and **the truth**: WARNING, GOOD SIGN, MIXED or NEUTRAL. Only clearly dark words (ROB, KILL, CURSE, POISON…) count as warnings and only clearly good words (JOY, PEACE, HEAL, LOVE…) as good signs — no guessing from definitions. A dark motive among the Intents weighs more than a dark Gift. The truth is said once, in wording that changes with every spin.
+- **The Oracle reading** — short and precise (usually 200–400 words), written from *this exact spin*:
+  1. **The signature** — opens with what is unusual about this spin: the main word echoing elsewhere, a word that is both Gift and Intent, a mirror pair, matching numbers, a repeated word, a sacred word, a branch from the main word…
+  2. **The word** — its meaning, number and archetype, first and last letter
+  3. **What is given** / **What is meant** — the top three Gifts and Intents: meaning, place on the cylinder, and how their number meets the main word's
+  4. **As above, so below** — what is arriving in the light above the line vs. what is rooted in the dark below
+  5. **Counsel** — follows the verdict, gives one clear order of action, and a question to carry
+- **As above, so below on the cylinder** — rows fade from light at the top to dark at the bottom, with the main line as the balance point; letters stay readable on every row.
+- **What every word means** — tap any word for a pop-up card, and the reading lists every Gift and Intent with:
+  - its meaning in plain English (slang, mystic, name and title meanings written for this app, then the dictionary meaning)
+  - its own Pythagorean vibration and archetype
+  - exactly where it sits (direction, starting row and ring) — Intents also show how they look on the rings left to right
+  - about 85% of words found on a typical spin have a meaning; the rest are rare Scrabble words
+- **Clean mode** — one switch hides swears and adult words.
+- **Hide nested words** — keeps EAR from cluttering the list when HEART is found (can be turned off).
+- **Ring dials** — ▲ / ▼ for each ring, side by side even on a phone.
+- **Random Spin** and **Align Word** (type up to 6 letters, press Enter).
 - **The reading in brief** — every word found, each with a short plain meaning, then *the meaning of it all*, and **the truth**: a blunt verdict — WARNING, GOOD SIGN or MIXED — naming the words that make it so. No sugar-coating; a bad motive among the Intents counts heavier than a bad Gift.
-- **The Oracle Reading** — a long, detailed reading (often 1,000–1,600 words) written from *this exact turn of the rings*. Change one ring and the whole reading changes; the same position always gives the same reading. It has eight parts:
-  1. **The aligned word** — its meaning, vibration, keystone and seal letters, repeating and missing numbers, and a letter-by-letter story
-  2. **The shape of this turn** — Gifts vs Intents balance, straight vs diagonal, the voice of the words (sacred, street, old), and the busiest ring
-  3. **The Gifts** — the strongest forward words, each with its meaning, where it sits (arriving above the line or rooted below it), how it moves, and how its number meets the main word's
-  4. **The Intents** — the same for backward words, plus how each looks on the rings before it's reversed
-  5. **Mirrors, branches and crossroads** — the same letters read both ways, words growing out of the main word, and letters where Gifts and Intents cross
-  6. **Above and below the line** — what is arriving vs what is rooted
-  7. **The numbers** — the Gift number, the Intent number and the number of the whole reading
-  7½. **The plain truth** — the blunt verdict, with what to watch and what to trust
-  8. **Counsel** — guidance, a question to carry with you, and the reading "in one breath"
 - **Save & print**
   - **Text file (.txt)** — every letter in its own fixed-width column, so the grid lines up when printed. Includes the full cylinder, a GIFT map, an INTENT map, and every word with its meaning, vibration, direction, start row and ring.
   - **Printable page (.html)** — open in a browser and print or Save as PDF; colored, ink-friendly grid.

@@ -126,6 +126,10 @@ hr { border-color: rgba(0,255,198,.25) !important; }
     text-shadow: 0 0 8px rgba(255,43,214,.7); margin-bottom:6px; }
 .condensed p { font-size: 19px; line-height: 1.6; color: #fff; margin: 0 0 10px 0; }
 .condensed p.truth { border-top: 1px solid rgba(0,255,198,.3); padding-top: 10px; }
+.rsec .warn { color: var(--magenta); font-weight: 800; text-shadow: 0 0 10px rgba(255,43,214,.9); }
+.rsec .good { color: var(--mint); font-weight: 800; text-shadow: 0 0 10px rgba(0,255,198,.9); }
+.rsec .mixed { color: var(--cyan); font-weight: 800; text-shadow: 0 0 10px rgba(0,229,255,.9); }
+.rsec p.truth { border-top: none; padding-top: 0; }
 .condensed .warn { color: var(--magenta); font-weight: 800; text-shadow: 0 0 10px rgba(255,43,214,.9); }
 .condensed .good { color: var(--mint); font-weight: 800; text-shadow: 0 0 10px rgba(0,255,198,.9); }
 .condensed .mixed { color: var(--cyan); font-weight: 800; text-shadow: 0 0 10px rgba(0,229,255,.9); }
@@ -304,21 +308,42 @@ def chip_html(groups, kind):
     return "".join(out)
 
 
+def row_tone(r):
+    """As above, so below: rows fade from light (top) to dark (bottom); the main line is the balance point."""
+    s = r - C.CENTER
+    if s < 0:                                   # above: into the light
+        t = -s / C.CENTER
+        L = 9 + 80 * t ** 0.85
+        fg = "#06231c" if L > 40 else "#d9f2eb"
+        lab = "#0b4a3b" if L > 40 else "#8fd9c7"
+        return (f"--bg:hsl(165,32%,{L:.0f}%);--fg:{fg};--bd:hsl(165,30%,{max(L - 10, 6):.0f}%)", lab, L > 40,
+                f"hsl(165,30%,{max(L - 5, 5):.0f}%)")
+    if s > 0:                                   # below: into the dark
+        t = s / (C.ROWS - 1 - C.CENTER)
+        L = 7 - 6 * t
+        return (f"--bg:hsl(165,25%,{L:.1f}%);--fg:#b4d3cb;--bd:hsl(165,20%,{L + 6:.1f}%)", "#7fb0a5", False,
+                f"hsl(165,25%,{max(L - 2, 0.5):.1f}%)")
+    return "", "", False, ""
+
+
 rows_html = []
 for r in range(C.ROWS):
     lab = C.row_label(r)
+    tone_style, lab_color, lite, row_bg = row_tone(r)
     cells = []
     for c in range(C.RINGS):
-        cls = ["t"]
+        cls = ["t"] + (["lite"] if lite else [])
         if r == C.CENTER:
             cls.append("m" if c < active_len else "mo")
         if (r, c) in gift_cells:
             cls.append("g")
         if (r, c) in intent_cells:
             cls.append("i")
-        cells.append(f"<div id='c{r}_{c}' class='{' '.join(cls)}'>{grid[r][c]}</div>")
-    rows_html.append(f"<div class='row{' main' if r == C.CENTER else ''}' {'id=mainrow' if r == C.CENTER else ''}>"
-                     f"<div class='lab'>{'► MAIN' if lab == 'MAIN' else lab}</div>{''.join(cells)}</div>")
+        cells.append(f"<div id='c{r}_{c}' class='{' '.join(cls)}' style='{tone_style}'>{grid[r][c]}</div>")
+    lab_style = f" style='color:{lab_color}'" if lab_color else ""
+    row_style = f" style='background:{row_bg}'" if row_bg else ""
+    rows_html.append(f"<div class='row{' main' if r == C.CENTER else ''}' {'id=mainrow' if r == C.CENTER else ''}{row_style}>"
+                     f"<div class='lab'{lab_style}>{'► MAIN' if lab == 'MAIN' else lab}</div>{''.join(cells)}</div>")
 
 face = f"""<!DOCTYPE html><html><head>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -327,15 +352,20 @@ face = f"""<!DOCTYPE html><html><head>
 * {{ box-sizing: border-box; }}
 body {{ margin:0; background:transparent; color:#dffff6; font-family:'Share Tech Mono',monospace; }}
 .wrap {{ display:flex; gap:16px; flex-wrap:wrap; }}
-.cyl {{ flex: 0 0 auto; height: 880px; overflow-y:auto; padding: 10px; border-radius:16px; background:#020405;
+.cyl {{ flex: 0 0 auto; height: 880px; overflow-y:auto; padding: 10px; border-radius:16px;
+       background:#000;
        border:1.5px solid rgba(0,255,198,.5); box-shadow: 0 0 18px rgba(0,255,198,.25), inset 0 0 30px rgba(0,255,198,.06); }}
-.row {{ display:flex; align-items:center; gap:6px; padding:3px 6px; border-radius:8px; }}
+.row {{ display:flex; align-items:center; gap:6px; padding:3px 6px; border-radius:0; }}
 .row.main {{ background: linear-gradient(90deg, rgba(0,255,198,.05), rgba(0,255,198,.18), rgba(0,255,198,.05));
             outline: 1.5px solid var(--mint); box-shadow: 0 0 14px rgba(0,255,198,.55); margin: 4px 0; }}
 .lab {{ width:62px; font-size:13px; color:#6fbfae; text-align:right; padding-right:6px; }}
 .row.main .lab {{ color: var(--mint); font-family:'Orbitron',sans-serif; font-size:11px; text-shadow:0 0 6px var(--mint); }}
 .t {{ width:38px; height:38px; line-height:38px; text-align:center; font-size:22px; font-weight:700; border-radius:7px;
-     background:#0a1012; color:#7c9a94; border:1px solid #13221f; transition: all .12s ease; }}
+     background: var(--bg, #0a1012); color: var(--fg, #9fbcb5); border:1px solid var(--bd, #13221f); transition: all .12s ease; }}
+/* highlights on the light (above) rows: deeper ink so they stay readable */
+.t.g.lite {{ color:#005c45; background: rgba(0,255,198,.55); border-color:#00916c; text-shadow:none; }}
+.t.i.lite {{ color:#8a0074; background: rgba(255,120,230,.55); border-color:#c2009f; text-shadow:none; }}
+.t.g.i.lite {{ color:#1a0030; background: linear-gradient(135deg, rgba(0,255,198,.6) 50%, rgba(255,120,230,.6) 50%); border-color:#333; }}
 .t.g {{ color: var(--mint); border-color: rgba(0,255,198,.7); background: rgba(0,255,198,.08); text-shadow:0 0 8px var(--mint); }}
 .t.i {{ color: var(--magenta); border-color: rgba(255,43,214,.7); background: rgba(255,43,214,.08); text-shadow:0 0 8px var(--magenta); }}
 .t.g.i {{ color:#fff; background: linear-gradient(135deg, rgba(0,255,198,.22) 50%, rgba(255,43,214,.22) 50%); border-color:#fff;
@@ -432,7 +462,7 @@ components.html(face, height=900, scrolling=False)
 st.write("---")
 st.markdown(f"## 🔮 Oracle reading · {word}")
 READING = R.build_reading(word, active_len, list(ss.offsets), grid, found, gifts, intents, MEANINGS)
-story = R.condensed(word, gifts, intents, MEANINGS)
+story = R.condensed(word, gifts, intents, MEANINGS, list(ss.offsets), active_len, grid, found)
 
 st.caption(f"A reading written from this exact turn of the rings — {len(gifts)} Gifts, {len(intents)} Intents, "
            f"where each one sits, and how their numbers meet. Change one ring and the whole reading changes.")
@@ -448,7 +478,8 @@ def brief_html(text):
 st.markdown(f"<div class='condensed'><div class='ch'>✦ THE READING IN BRIEF</div>"
             f"<p>{brief_html(story)}</p></div>", unsafe_allow_html=True)
 for i, (head, paras) in enumerate(READING):
-    body = "".join(f"<p>{html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>" for x in paras)
+    body = "".join(f"<p>{brief_html(x.replace(' -> ', ' → ')) if x.startswith('The truth:') else html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>"
+                   for x in paras)
     kind = " intent" if head.startswith("The Intents") else ""
     st.markdown(f"<div class='rsec{kind}'><div class='rhead'><span class='rnum'>{i + 1:02d}</span>{html.escape(head)}</div>"
                 f"{body}</div>", unsafe_allow_html=True)
