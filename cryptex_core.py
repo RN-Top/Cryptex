@@ -254,8 +254,12 @@ def group_words(found, kind, meanings=None):
 
     def key(g):
         k = rank_key(g[0], g[1])
-        if meanings is not None and not explain(g[0], meanings)["lines"]:
-            k = (k[0] + 3,) + k[1:]
+        if meanings is not None:
+            lines = explain(g[0], meanings)["lines"]
+            if not lines:
+                k = (k[0] + 3,) + k[1:]
+            elif lines[0][0] == "1913":  # only an old Webster meaning
+                k = (k[0] + 1,) + k[1:]
         return k
     out.sort(key=key)
     return out
@@ -335,7 +339,7 @@ def _grid_lines(grid, active_len, show=None):
     return lines
 
 
-def build_text_report(main_word, active_len, grid, found, gifts, intents, num, settings, meanings=None):
+def build_text_report(main_word, active_len, grid, found, gifts, intents, num, settings, meanings=None, reading=None):
     total, title, desc, guide = num
     W = 78
     bar, thin = "=" * W, "-" * W
@@ -396,14 +400,20 @@ def build_text_report(main_word, active_len, grid, found, gifts, intents, num, s
     L += word_table(gifts, f"  4. GIFTS - {len(gifts)} forward word(s) - what is given", "gift")
     L += word_table(intents, f"  5. INTENTS - {len(intents)} backward word(s) - the will beneath", "intent")
 
-    L += ["", bar, "  6. CIRCUMFERENCE SYNTHESIS", bar]
-    L += _wrap(synthesis(main_word, gifts, intents, desc, meanings))
+    L += ["", bar, "  6. THE ORACLE READING", bar]
+    if reading:
+        for head, paras in reading:
+            L += ["", f"  {_ascii(head).upper()}", "  " + "-" * min(len(_ascii(head)), 74)]
+            for para in paras:
+                L += _wrap(para, width=74) + [""]
+    else:
+        L += _wrap(synthesis(main_word, gifts, intents, desc, meanings))
     L += [bar, ""]
     return "\n".join(_ascii(x) for x in L)
 
 
 # ---------------------------------------------------------------- printable HTML page
-def build_print_html(main_word, active_len, grid, found, gifts, intents, num, meanings=None):
+def build_print_html(main_word, active_len, grid, found, gifts, intents, num, meanings=None, reading=None):
     total, title, desc, guide = num
     gift_cells = {cell for o in found if o["kind"] == "gift" for cell in o["cells"]}
     intent_cells = {cell for o in found if o["kind"] == "intent" for cell in o["cells"]}
@@ -440,10 +450,16 @@ def build_print_html(main_word, active_len, grid, found, gifts, intents, num, me
                     f"<td>{mean}</td><td><small>{where}<br>{html.escape(TIER_LABEL.get(t, t))}</small></td></tr>")
         return f"<table class='list'><tr><th>Word</th><th>Meaning</th><th>Where</th></tr>{trs}</table>"
 
+    if reading:
+        reading_html = "".join(f"<h3>{html.escape(h)}</h3>" + "".join(f"<p>{html.escape(x)}</p>" for x in ps)
+                               for h, ps in reading)
+    else:
+        reading_html = (f"<p><b>{title}:</b> {html.escape(desc)}</p><p>{html.escape(guide)}</p>"
+                        f"<p>{html.escape(synthesis(main_word, gifts, intents, desc, meanings))}</p>")
     return f"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cryptex werd - {main_word}</title>
 <style>
 body{{font-family:Helvetica,Arial,sans-serif;color:#111;max-width:760px;margin:24px auto;padding:0 16px}}
-h1{{letter-spacing:4px;margin:0}} h1 .x{{font-size:1.6em;color:#00a37a}}
+h1{{letter-spacing:4px;margin:0}} h3{{margin:18px 0 4px 0;color:#00775a}} p{{line-height:1.5}} h1 .x{{font-size:1.6em;color:#00a37a}}
 .grid{{border-collapse:collapse;margin:12px 0}}
 .grid td{{width:34px;height:34px;text-align:center;font:700 20px "Courier New",monospace;border:1px solid #bbb}}
 .grid th{{font:600 12px monospace;padding-right:8px;text-align:right;color:#555}}
@@ -457,8 +473,8 @@ h1{{letter-spacing:4px;margin:0}} h1 .x{{font-size:1.6em;color:#00a37a}}
 <p><b>Main word:</b> {main_word} &nbsp; <b>Vibration:</b> {total} - {title}<br><small>{time.strftime('%Y-%m-%d %H:%M:%S')}</small></p>
 <p class="key"><span style="background:#c8f7e6">GIFT &mdash; forward</span><span style="background:#f7c8ee">INTENT &mdash; backward</span><span style="outline:3px solid #000">Main row</span></p>
 <table class="grid">{''.join(rows)}</table>
+<h2>The Oracle Reading</h2>{reading_html}
 <h2>Gifts ({len(gifts)})</h2>{tbl(gifts)}
 <h2>Intents ({len(intents)})</h2>{tbl(intents)}
-<h2>Reading</h2><p><b>{title}:</b> {html.escape(desc)}</p><p>{html.escape(guide)}</p>
-<p>{html.escape(synthesis(main_word, gifts, intents, desc, meanings))}</p>
+
 </body></html>"""
