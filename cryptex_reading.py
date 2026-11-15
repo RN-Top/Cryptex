@@ -402,6 +402,9 @@ def build_reading(main_word, active_len, offsets, grid, found, gifts, intents, m
     p.append(f"The whole reading - main word, Gifts and Intents together - comes to {whole}: {wt}. {wd}")
     sections.append(("The numbers", p))
 
+    # 7b. The plain truth -------------------------------------------------------------------
+    sections.append(("The plain truth", plain_truth(main_word, gifts, intents, meanings)))
+
     # 8. Counsel ---------------------------------------------------------------------------------
     p = []
     g0 = gifts[0][0] if gifts else None
@@ -541,4 +544,118 @@ def condensed(main_word, gifts, intents, meanings):
         meaning = f"{through} nothing is handed over yet - the force at work is {iw}{' (' + it + ')' if it else ''}"
     sentences.append(f"The meaning of it all: {meaning}. It comes down to {whole}, {NUMBER_KEY[whole]} - "
                      f"{NUMBER_ACTION[whole]}.")
+    truth = plain_truth(main_word, gifts, intents, meanings)
+    sentences.append(" ".join(truth[:3]))
     return " ".join(sentences)
+
+
+# ------------------------------------------------------------------ the plain truth (no sugar-coating)
+WARN_WORDS = set("""
+ABYSS ACHE ACHES ACID AFRAID AGONY AIL AILS ALONE ANGER ANGST ANGRY ARSON ATTACK AWFUL AXE BAD BADLY BAIT BAN BANE BARF BASH
+BEAT BEG BICKER BILE BITCH BITCHY BITE BITTER BLAME BLAST BLEAK BLEED BLIND BLOOD BLOODY BLOW BLUNT BOGUS BOMB BONDS BORE BOSH
+BRAWL BREAK BROKE BROKEN BRUTE BULLY BURN BURNT BUST CAGE CAGED CAN'T CHAIN CHAOS CHEAT CHOKE CON CONS CORPSE COST CRASH CRAVE
+CRIME CRIPPLE CROOK CRUEL CRUSH CRY CRYPT CURSE CURSED CUT DAMN DANGER DARK DEAD DEATH DEBT DECAY DEFEAT DEMON DENY DESPAIR
+DEVIL DIE DIED DIES DIRE DIRT DIRTY DOOM DOOMED DOWN DRAIN DREAD DROWN DRUNK DUMB DUMP DUNCE DUPE DYING EERIE EGO ENEMY ENVY
+ERR ERROR EVIL EXILE FAIL FAILS FAKE FALL FALSE FAULT FEAR FEUD FIEND FIGHT FIRE FLAW FLEE FLOP FOE FOES FOOL FORGET FRAUD
+FREAK FRET FURY GALL GHOST GLOOM GLUM GORE GRAVE GREED GRIEF GRIM GRIME GROAN GRUDGE GUILT GUN HARM HATE HATED HAVOC HEX HOAX
+HOLLOW HOSTILE HURT HURTS ILL ILLS IRE JAIL JEALOUS JEER JERK JUNK KILL KILLS LACK LAME LIAR LIE LIES LIMP LOATHE LONELY
+LOSE LOSER LOSS LOST LOUSE LURE LUST MAD MALICE MEAN MESS MISS MOAN MOB MOCK MOLD MOURN MUD MURDER NAG NASTY NEED NUMB OPP
+OPPS OUST PAIN PANIC PERIL PEST PISS PISSED PLAGUE POISON POOR PREY PRICK PRISON PUNISH PUS RAGE RAID RANT RASH RAT RATS
+RAZE ROB ROT ROTTEN RUDE RUIN RUINS RUST SAD SADLY SCAM SCAR SCARE SCARY SCORN SCREAM SHAME SHAM SHOCK SHOT SHUN SICK SIN
+SINS SKID SLAP SLASH SLAVE SLAY SLUT SMEAR SNARE SNEER SNUB SOB SORE SORROW SORRY SPITE SPOIL STAB STAIN STEAL STING STINK
+STOLE STRIFE STRIKE STUPID SUCK SUCKS SUFFER SUS SWINDLE TABOO TEAR TEARS TERROR THEFT THIEF THREAT TOIL TOMB TORN TORMENT
+TOXIC TRAP TRICK TROLL TWAT UGLY UGH UPSET URGE VAIN VENOM VEX VICE VILE VIRUS VOID WAIL WANE WAR WARS WASTE WASTED WEAK
+WEEP WHORE WICKED WIDOW WOE WOES WOUND WRATH WRECK WRONG YIKES
+""".split())
+GOOD_WORDS = set("""
+ABLE ACE ADORE ADORED AID ALIVE ALLY AMEN ANGEL ANGELS ARISE ART ASCEND AURA AWE AWW BABE BAE BAG BALM BASK BEAM BEST BET
+BLESS BLISS BLOOM BLOSSOM BOLD BONUS BOO BOOM BOSS BRAVE BRAVO BREAD BRIGHT BUD BUDDY BUSSIN CALM CARE CHAMP CHARM CHEER
+CHILL CLEAN CLEAR CLUTCH COZY CROWN CURE DEAR DEFT DIVINE DOPE DREAM DRIP EARN EASE EASY EDEN ELATE ENJOY EPIC EXALT FAIR
+FAITH FAM FAME FAVOR FEAST FINE FIRE FIT FLY FOND FREE FRESH FRIEND FUN GAIN GAINS GEM GEMS GIFT GIFTS GIVE GLAD GLEE GLOW
+GOAL GOALS GOAT GOD GOLD GOOD GRACE GRAIL GRAND GREAT GROW GROWN GUIDE HAIL HALO HAPPY HEAL HEALS HEART HEAVEN HELP HERO
+HONEY HONOR HOPE HUG HUGS HYPE ICONIC IDEAL JADE JOY JOYS KIND KING KISS LEGIT LIFE LIGHT LIKE LIT LOVE LOVED LOYAL LUCK
+LUCKY LUSH MAGIC MENTOR MERCY MERRY MINT MIRTH MUSE NEAT NICE NOBLE NOVA OASIS OPAL PAL PARTY PEACE PEARL PERK PLUS POWER
+PRAISE PRIZE PROUD PURE QUEEN RAD REAL RELIEF REST RICH RISE RIZZ ROSE RUBY SAFE SAGE SAINT SALVE SAVE SAVED SEED SHINE
+SLAY SMART SMILE SOAR SOUL SPARK STAR STARS STRONG SUN SURE SWAG SWEET THANK THRIVE TREAT TRUE TRUST TRUTH UNITY VALOR
+VIBE VIBES VICTOR VOW WARM WEALTH WED WELL WIN WINS WISDOM WISE WON WONDER WORTH WOW YAS YASS YAY YES YUM ZEN ZEST
+""".split())
+WARN_MEANING = re.compile(r"\b(harm|hurt|pain|painful|death|dead|die|kill|violent|violence|attack|injur\w*|wound|disease|illness|sick|"
+                          r"poison|evil|wicked|cruel|insult|enemy|opponent|fear|terror|danger|threat|fail|failure|loss|lose|"
+                          r"mistake|deceiv|cheat|lie |lying|steal|theft|rob|destroy|ruin|decay|rot|grief|sorrow|anger|angry|"
+                          r"hostil|disgust|shame|guilt|curse|demon|devil|abuse|annoy|irritat|bitter|suspicious|untrust|"
+                          r"torn violently|tear or be torn|drunk|intoxicat|offensive|vulgar)", re.I)
+GOOD_MEANING = re.compile(r"\b(love|loved|loving|joy|joyful|happy|happiness|peace|peaceful|heal|healing|cheer|cheerful|"
+                          r"pleasant|praise|admiration|admire|precious|treasured?|beauty|beautiful|grace|graceful|calm|"
+                          r"bless|blessed|blessing|divine|wisdom|wise|bright|success|successful|reward|gift|friend|"
+                          r"friendship|affection|sweetheart|excellent|amazing|gentle|protect|protection|abundance|"
+                          r"wealth|honor|courage|strength|flourish|growth|rebirth|enlightenment|perfect|delight|"
+                          r"enthusiastic yes|victory|triumph|hope|kindness|generous|radiant)\b", re.I)
+
+
+AMBIGUOUS = set("FIRE SLAY DOWN NEED MISS URGE COST SICK BOMB GHOST TABOO BLUNT STRIKE SHOT FALL CUT BREAK BEAT BLOW "
+                "DARK TEAR TEARS MEAN LACK BORE CRY DUMP SKID LIMP RASH DIRT MUD MOLD MOB CON CONS DAMN".split())
+WARN_WORDS -= AMBIGUOUS
+
+
+def tone(w, meanings):
+    """+1 good sign, -1 warning, 0 neutral."""
+    if w in WARN_WORDS:
+        return -1
+    if w in GOOD_WORDS:
+        return 1
+    m, _ = meaning_of(w, meanings, 400)
+    if not m:
+        return 0
+    bad, good = bool(WARN_MEANING.search(m[1])), bool(GOOD_MEANING.search(m[1]))
+    if bad and not good:
+        return -1
+    if good and not bad:
+        return 1
+    return 0
+
+
+def plain_truth(main_word, gifts, intents, meanings):
+    """A blunt verdict: warning, good sign, or mixed - with the words that make it so."""
+    g = [w for w, _, _ in gifts if w != main_word]
+    i = [w for w, _, _ in intents if w != main_word]
+    gw = [w for w in g if tone(w, meanings) < 0]
+    gg = [w for w in g if tone(w, meanings) > 0]
+    iw = [w for w in i if tone(w, meanings) < 0]
+    ig = [w for w in i if tone(w, meanings) > 0]
+    main_t = tone(main_word, meanings)
+
+    def tag(ws, n=5):
+        out = []
+        for w in ws[:n]:
+            t = gist(w, meanings, 5)
+            out.append(f"{w} ({t})" if t else w)
+        return join_words(out)
+
+    warn = len(gw) + 1.5 * len(iw) + (1 if main_t < 0 else 0)   # a bad motive counts heavier than a bad gift
+    good = len(gg) + 1.5 * len(ig) + (1 if main_t > 0 else 0)
+    lines = []
+    if warn == 0 and good == 0:
+        lines.append(f"The truth: this turn is neutral - no clear warning, no clear blessing. "
+                     f"Nothing here is pushing you either way; what happens next is on you.")
+        return lines
+    if warn >= good * 1.5:
+        lines.append("The truth: this is a WARNING.")
+    elif good >= warn * 1.5:
+        lines.append("The truth: this is a GOOD SIGN.")
+    else:
+        lines.append("The truth: this is MIXED - real good and real trouble in the same turn.")
+    if iw:
+        lines.append(f"Watch the motive: the intent underneath carries {tag(iw)}. "
+                     f"Something - or someone - in this situation is not acting in your favor, and it won't announce itself.")
+    if gw:
+        lines.append(f"Not everything coming at you is welcome: {tag(gw)} "
+                     f"{'is' if len(gw) == 1 else 'are'} among the Gifts. Don't accept everything you're handed.")
+    if gg:
+        lines.append(f"What's genuinely good: {tag(gg)}. That part is real - take it.")
+    if ig:
+        lines.append(f"The motive behind it is sound: {tag(ig)}. The reason underneath is on your side.")
+    if main_t < 0:
+        lines.append(f"Even the main word, {main_word}, leans dark. Be honest about why you set it.")
+    if warn > good and not ig:
+        lines.append("Don't explain it away. Act on it.")
+    return lines
