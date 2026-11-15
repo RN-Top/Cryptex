@@ -125,6 +125,10 @@ hr { border-color: rgba(0,255,198,.25) !important; }
 .condensed .ch { font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:3px; color: var(--magenta);
     text-shadow: 0 0 8px rgba(255,43,214,.7); margin-bottom:6px; }
 .condensed p { font-size: 19px; line-height: 1.6; color: #fff; margin: 0 0 10px 0; }
+.condensed p.truth { border-top: 1px solid rgba(0,255,198,.3); padding-top: 10px; }
+.condensed .warn { color: var(--magenta); font-weight: 800; text-shadow: 0 0 10px rgba(255,43,214,.9); }
+.condensed .good { color: var(--mint); font-weight: 800; text-shadow: 0 0 10px rgba(0,255,198,.9); }
+.condensed .mixed { color: var(--cyan); font-weight: 800; text-shadow: 0 0 10px rgba(0,229,255,.9); }
 .stats { display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin: 6px 0 14px 0; }
 @media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 .stat { background: rgba(0,0,0,.75); border:1px solid rgba(0,229,255,.4); border-radius:12px; padding:10px 14px;
@@ -432,8 +436,17 @@ story = R.condensed(word, gifts, intents, MEANINGS)
 
 st.caption(f"A reading written from this exact turn of the rings — {len(gifts)} Gifts, {len(intents)} Intents, "
            f"where each one sits, and how their numbers meet. Change one ring and the whole reading changes.")
+def brief_html(text):
+    t = html.escape(text.replace(" - ", " — "))
+    t = t.replace("The meaning of it all:", "</p><p class='truth'><b>THE MEANING OF IT ALL:</b>", 1)
+    t = t.replace("The truth:", "</p><p class='truth'><b>THE TRUTH:</b>", 1)
+    for k, cls in (("a WARNING", "warn"), ("a GOOD SIGN", "good"), ("MIXED", "mixed")):
+        t = t.replace(k, f"<span class='{cls}'>{k}</span>", 1)
+    return t
+
+
 st.markdown(f"<div class='condensed'><div class='ch'>✦ THE READING IN BRIEF</div>"
-            f"<p>{html.escape(story.replace(' - ', ' — '))}</p></div>", unsafe_allow_html=True)
+            f"<p>{brief_html(story)}</p></div>", unsafe_allow_html=True)
 for i, (head, paras) in enumerate(READING):
     body = "".join(f"<p>{html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>" for x in paras)
     kind = " intent" if head.startswith("The Intents") else ""
