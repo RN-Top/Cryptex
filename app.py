@@ -7,6 +7,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import cryptex_core as C
+import cryptex_reading as R
 
 st.set_page_config(page_title="Cryptex werd", page_icon="🗝️", layout="wide")
 
@@ -111,6 +112,14 @@ hr { border-color: rgba(0,255,198,.25) !important; }
 .wm { font-size:16px; color:#effffa; margin-top:4px; line-height:1.45; }
 .wl { display:inline-block; min-width:54px; font-family:'Share Tech Mono',monospace; font-size:12px; color: var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-right:6px; }
 .wloc { font-size:13px; color:#8fd9c7; margin-top:6px; }
+.rsec { border:1px solid rgba(0,255,198,.35); border-radius:14px; padding: 12px 18px 4px 18px; margin: 10px 0;
+    background: linear-gradient(180deg, rgba(0,20,16,.75), rgba(0,0,0,.75)); box-shadow: 0 0 14px rgba(0,255,198,.08); }
+.rsec.intent { border-color: rgba(255,43,214,.4); background: linear-gradient(180deg, rgba(20,0,16,.7), rgba(0,0,0,.75)); }
+.rhead { font-family:'Orbitron',sans-serif; font-weight:700; font-size:16px; letter-spacing:2px; color: var(--cyan);
+    text-shadow: 0 0 8px rgba(0,229,255,.6); margin-bottom: 6px; text-transform: uppercase; }
+.rsec.intent .rhead { color: var(--magenta); text-shadow: 0 0 8px rgba(255,43,214,.6); }
+.rnum { color: var(--mint); margin-right: 10px; font-size: 13px; opacity:.8; }
+.rsec p { font-size: 17px; line-height: 1.65; color: #e8fff8; margin: 0 0 10px 0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -395,26 +404,16 @@ components.html(face, height=900, scrolling=False)
 # ============================================================ READING
 st.write("---")
 st.markdown(f"## 🔮 Oracle reading · {word}")
-st.markdown(f"#### Archetype: {num_title} — Vibration {total_num}")
-st.markdown(f"**Core essence:** *{num_desc}*")
-st.markdown(f"**Guidance for {word}:** {num_guidance}")
-st.markdown("**Letter vibrations:** " + " · ".join(
-    f"**{c}**={C.PYTHAGOREAN_VALUES.get(c, 0)} ({C.LETTER_MEANINGS.get(c, '')})" for c in word))
-
-
-def chipline(groups, cls, limit=24):
-    if not groups:
-        return "<i>none found</i>"
-    extra = f" <span style='border:none;color:#8fd9c7'>+{len(groups) - limit} more</span>" if len(groups) > limit else ""
-    return "<div class='chipline'>" + "".join(f"<span class='{cls}'>{w}</span>" for w, _, _ in groups[:limit]) + extra + "</div>"
-
-
-st.markdown(f"<div class='panel'><span class='neon-gift'>◆ GIFTS</span> — what is being given to you (forward words)"
-            f"{chipline(gifts, 'g')}</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='panel intent'><span class='neon-intent'>◇ INTENTS</span> — the will beneath it (backward words)"
-            f"{chipline(intents, 'i')}</div>", unsafe_allow_html=True)
+READING = R.build_reading(word, active_len, list(ss.offsets), grid, found, gifts, intents, MEANINGS)
 story = C.synthesis(word, gifts, intents, num_desc, MEANINGS)
-st.success(f"**Circumference synthesis:** {story}")
+
+st.caption(f"A reading written from this exact turn of the rings — {len(gifts)} Gifts, {len(intents)} Intents, "
+           f"where each one sits, and how their numbers meet. Change one ring and the whole reading changes.")
+for i, (head, paras) in enumerate(READING):
+    body = "".join(f"<p>{html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>" for x in paras)
+    kind = " intent" if head.startswith("The Intents") else ""
+    st.markdown(f"<div class='rsec{kind}'><div class='rhead'><span class='rnum'>{i + 1:02d}</span>{html.escape(head)}</div>"
+                f"{body}</div>", unsafe_allow_html=True)
 
 # ---------- what every word means
 st.markdown("### 📖 What the words mean")
@@ -464,13 +463,13 @@ st.markdown("#### ◈ Save & print")
 d1, d2, d3 = st.columns(3)
 with d1:
     st.download_button("📄  TEXT FILE (.txt)",
-                       data=C.build_text_report(word, active_len, grid, found, gifts, intents, num, settings_desc, MEANINGS),
+                       data=C.build_text_report(word, active_len, grid, found, gifts, intents, num, settings_desc, MEANINGS, READING),
                        file_name=f"cryptex_{word.lower()}_{stamp}.txt", mime="text/plain", use_container_width=True,
                        help="Plain text with every letter in its own column — open in any editor and print. "
                             "Includes the full cylinder, a GIFT map, an INTENT map and the word lists.")
 with d2:
     st.download_button("🖨️  PRINTABLE PAGE (.html)",
-                       data=C.build_print_html(word, active_len, grid, found, gifts, intents, num, MEANINGS),
+                       data=C.build_print_html(word, active_len, grid, found, gifts, intents, num, MEANINGS, READING),
                        file_name=f"cryptex_{word.lower()}_{stamp}.html", mime="text/html", use_container_width=True,
                        help="Open in a browser and print (or Save as PDF). Colored grid, ink-friendly.")
 with d3:
@@ -478,7 +477,7 @@ with d3:
         ss.journal.append({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "word": word, "num": total_num,
                            "title": num_title, "guidance": num_guidance,
                            "gifts": [w for w, _, _ in gifts[:10]], "intents": [w for w, _, _ in intents[:10]],
-                           "story": story})
+                           "story": story, "reading": READING})
         st.toast("Reading saved to your log.")
 
 # ============================================================ LOG
@@ -493,12 +492,20 @@ if ss.journal:
             if e["intents"]:
                 st.markdown(f"<span class='neon-intent'>Intents:</span> {', '.join(e['intents'])}", unsafe_allow_html=True)
             st.markdown(f"> {e['story']}")
+            if e.get("reading"):
+                with st.expander("Full reading"):
+                    for h, ps in e["reading"]:
+                        st.markdown(f"**{h}**")
+                        for x in ps:
+                            st.markdown(x)
             st.markdown("---")
         for n, e in enumerate(ss.journal, 1):
             log_lines += [f"#{n}  {e['time']}  {e['word']}  (Vibration {e['num']} - {e['title']})",
                           f"    Gifts:   {', '.join(e['gifts']) or '-'}",
                           f"    Intents: {', '.join(e['intents']) or '-'}",
                           f"    {e['story']}", ""]
+            for h, ps in e.get("reading", []):
+                log_lines += [f"    {h.upper()}"] + [f"    {x}" for x in ps] + [""]
         st.download_button("📥  DOWNLOAD LOG (.txt)", data=C._ascii("\n".join(log_lines)),
                            file_name=f"cryptex_log_{stamp}.txt", mime="text/plain")
         st.caption("The log lives in this browser session — download it before closing the tab.")
