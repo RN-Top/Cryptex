@@ -1,3 +1,5 @@
+import html
+import json
 import random
 import time
 
@@ -98,6 +100,17 @@ hr { border-color: rgba(0,255,198,.25) !important; }
 .chipline span { display:inline-block; margin: 3px 4px 3px 0; padding: 2px 10px; border-radius: 999px; font-family:'Share Tech Mono',monospace; font-size:16px; letter-spacing:1.5px; }
 .chipline .g { color: var(--mint); border:1px solid var(--mint); box-shadow: 0 0 6px rgba(0,255,198,.4); }
 .chipline .i { color: var(--magenta); border:1px solid var(--magenta); box-shadow: 0 0 6px rgba(255,43,214,.4); }
+.wcard { border:1px solid rgba(0,255,198,.45); border-left: 4px solid var(--mint); border-radius:12px; padding:10px 14px; margin:8px 0;
+    background: rgba(0,14,11,.75); }
+.wcard.intent { border-color: rgba(255,43,214,.45); border-left-color: var(--magenta); background: rgba(16,0,12,.7); }
+.wh { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.ww { font-family:'Orbitron',sans-serif; font-weight:900; font-size:21px; letter-spacing:3px; color: var(--mint); text-shadow:0 0 8px rgba(0,255,198,.7); }
+.wcard.intent .ww { color: var(--magenta); text-shadow:0 0 8px rgba(255,43,214,.7); }
+.wv { margin-left:auto; font-family:'Share Tech Mono',monospace; font-size:14px; color:#ffd8f6; }
+.wb { font-size:13px; color:#8fd9c7; }
+.wm { font-size:16px; color:#effffa; margin-top:4px; line-height:1.45; }
+.wl { display:inline-block; min-width:54px; font-family:'Share Tech Mono',monospace; font-size:12px; color: var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-right:6px; }
+.wloc { font-size:13px; color:#8fd9c7; margin-top:6px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -114,7 +127,13 @@ def get_lookup(enabled, clean_mode):
     return C.build_lookup(tiers, clean_filter, set(enabled), clean_mode)
 
 
+@st.cache_resource(show_spinner=False)
+def get_meanings():
+    return C.load_meanings()
+
+
 TIERS_DATA, _ = get_tiers()
+MEANINGS = get_meanings()
 
 # ============================================================ STATE
 ss = st.session_state
@@ -201,8 +220,8 @@ active_len = ss.active_len
 grid = C.build_grid(ss.offsets)
 found = C.find_words(grid, lookup, min_len=min_len, horizontal=use_h, diagonal=use_d,
                      vertical=use_v, hide_nested=hide_nested)
-gifts = C.group_words(found, "gift")
-intents = C.group_words(found, "intent")
+gifts = C.group_words(found, "gift", MEANINGS)
+intents = C.group_words(found, "intent", MEANINGS)
 num = C.numerology(word)
 total_num, num_title, num_desc, num_guidance = num
 
@@ -218,6 +237,24 @@ gift_cells = {cell for o in found if o["kind"] == "gift" for cell in o["cells"]}
 intent_cells = {cell for o in found if o["kind"] == "intent" for cell in o["cells"]}
 
 
+def word_info(w, tier, occ, kind):
+    info = C.explain(w, MEANINGS)
+    n, t, d = info["vibration"]
+    where = []
+    for o in occ:
+        r0, c0 = o["cells"][0]
+        line = f"{o['arrow']} reads {o['dir'].lower()} from row {C.row_label(r0)}, ring {c0 + 1}"
+        if kind == "intent":
+            line += " · on the rings: " + "".join(grid[r][c] for r, c in sorted(o["cells"], key=lambda rc: rc[1]))
+        where.append(line)
+    return {"w": w, "kind": kind, "tier": C.TIER_LABEL.get(tier, tier), "base": info["base"],
+            "lines": info["lines"], "vib": f"{n} · {t}", "vibdesc": d, "where": where}
+
+
+INFO = {f"{k}:{w}": word_info(w, t, occ, k) for k, groups in (("gift", gifts), ("intent", intents))
+        for w, t, occ in groups}
+
+
 def chip_html(groups, kind):
     if not groups:
         return "<div class='none'>none found</div>"
@@ -226,7 +263,7 @@ def chip_html(groups, kind):
         ids = " ".join(f"c{r}_{c}" for o in occ for r, c in o["cells"])
         arrows = "".join(sorted({o["arrow"] for o in occ}))
         count = f"<sup>×{len(occ)}</sup>" if len(occ) > 1 else ""
-        out.append(f"<button class='chip {kind} t-{tier}' data-cells='{ids}' title='{C.TIER_LABEL[tier]}'>"
+        out.append(f"<button class='chip {kind} t-{tier}' data-cells='{ids}' data-key='{kind}:{w}'>"
                    f"{w}<span class='ar'>{arrows}</span>{count}</button>")
     return "".join(out)
 
@@ -248,13 +285,13 @@ for r in range(C.ROWS):
                      f"<div class='lab'>{'► MAIN' if lab == 'MAIN' else lab}</div>{''.join(cells)}</div>")
 
 face = f"""<!DOCTYPE html><html><head>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 :root {{ --mint:{MINT}; --cyan:{CYAN}; --magenta:{MAGENTA}; }}
 * {{ box-sizing: border-box; }}
 body {{ margin:0; background:transparent; color:#dffff6; font-family:'Share Tech Mono',monospace; }}
 .wrap {{ display:flex; gap:16px; flex-wrap:wrap; }}
-.cyl {{ flex: 0 0 auto; height: 560px; overflow-y:auto; padding: 10px; border-radius:16px; background:#020405;
+.cyl {{ flex: 0 0 auto; height: 880px; overflow-y:auto; padding: 10px; border-radius:16px; background:#020405;
        border:1.5px solid rgba(0,255,198,.5); box-shadow: 0 0 18px rgba(0,255,198,.25), inset 0 0 30px rgba(0,255,198,.06); }}
 .row {{ display:flex; align-items:center; gap:6px; padding:3px 6px; border-radius:8px; }}
 .row.main {{ background: linear-gradient(90deg, rgba(0,255,198,.05), rgba(0,255,198,.18), rgba(0,255,198,.05));
@@ -271,7 +308,7 @@ body {{ margin:0; background:transparent; color:#dffff6; font-family:'Share Tech
 .t.mo {{ color:#3d6b60; }}
 .t.spot {{ background: #fff !important; color:#000 !important; text-shadow:none !important; transform: scale(1.12);
           box-shadow: 0 0 14px #fff, 0 0 28px var(--cyan); border-color:#fff !important; z-index:2; }}
-.side {{ flex: 1 1 280px; min-width: 260px; height: 560px; overflow-y:auto; padding: 12px 14px; border-radius:16px; background:#020405;
+.side {{ flex: 1 1 280px; min-width: 260px; height: 880px; overflow-y:auto; padding: 12px 14px; border-radius:16px; background:#020405;
         border:1.5px solid rgba(0,229,255,.4); box-shadow: 0 0 18px rgba(0,229,255,.18); }}
 h3 {{ font-family:'Orbitron',sans-serif; font-size:14px; letter-spacing:2px; margin: 4px 0 8px 0; }}
 h3.g {{ color: var(--mint); text-shadow: 0 0 8px var(--mint); }}
@@ -286,35 +323,74 @@ h3.i {{ color: var(--magenta); text-shadow: 0 0 8px var(--magenta); margin-top: 
 .chip .ar {{ font-size: 13px; margin-left: 5px; opacity:.85; }}
 .chip sup {{ font-size: 11px; margin-left: 2px; }}
 .none {{ color:#557; font-size:14px; }}
+@media (max-width: 700px) {{
+  .wrap {{ gap: 12px; }}
+  .cyl {{ height: 500px; width: 100%; }}
+  .t {{ width: 36px; height: 36px; line-height: 36px; }}
+  .side {{ height: 380px; flex-basis: 100%; }}
+}}
+.card {{ display:none; position:sticky; top:-12px; z-index:5; margin:-12px -14px 10px -14px; padding:12px 14px;
+        background:#020809; border-bottom:1.5px solid var(--cyan); box-shadow: 0 6px 18px rgba(0,0,0,.8); font-family:'Exo 2',sans-serif; }}
+.card.show {{ display:block; }}
+.card .w {{ font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:3px; }}
+.card.gift .w {{ color:var(--mint); text-shadow:0 0 10px var(--mint); }}
+.card.intent .w {{ color:var(--magenta); text-shadow:0 0 10px var(--magenta); }}
+.card .k {{ font-family:'Orbitron',sans-serif; font-size:10px; letter-spacing:2px; margin-left:8px; vertical-align:middle; color:#9ff; }}
+.card .m {{ font-size:16px; color:#effffa; margin:6px 0; line-height:1.45; }}
+.card .m i {{ color:var(--cyan); font-style:normal; font-size:12px; letter-spacing:1px; text-transform:uppercase; margin-right:4px; }}
+.card .v {{ font-size:14px; color:#ffd8f6; }} .card .loc {{ font-size:13px; color:#8fd9c7; margin-top:4px; }}
+.card .x {{ float:right; background:none; border:none; color:#9ff; font-size:20px; cursor:pointer; }}
 </style></head><body>
 <div class="wrap">
   <div class="cyl" id="cyl">{''.join(rows_html)}</div>
   <div class="side">
-    <div class="hint">Tap a word to light up its path on the cylinder. Tap again to clear.</div>
+    <div class="card" id="card"></div>
+    <div class="hint">Tap a word to see what it means and light up its path on the cylinder. Tap again to clear.</div>
     <h3 class="g">◆ GIFTS — forward ({len(gifts)})</h3>{chip_html(gifts, 'gift')}
     <h3 class="i">◇ INTENTS — backward ({len(intents)})</h3>{chip_html(intents, 'intent')}
   </div>
 </div>
 <script>
-const cyl = document.getElementById('cyl'), main = document.getElementById('mainrow');
+const INFO = __INFO__;
+const cyl = document.getElementById('cyl'), main = document.getElementById('mainrow'), card = document.getElementById('card');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}}[c]));
+function showCard(key) {{
+  const d = INFO[key]; if (!d) {{ card.className = 'card'; return; }}
+  const label = d.kind === 'gift' ? 'GIFT · forward' : 'INTENT · backward';
+  const means = d.lines.length ? d.lines.map(l => `<div class="m"><i>${{esc(l[0])}}</i>${{esc(l[1])}}</div>`).join('')
+                               : '<div class="m">A valid Scrabble word — no definition on file.</div>';
+  card.innerHTML = `<button class="x" onclick="clearAll()">×</button><span class="w">${{esc(d.w)}}</span><span class="k">${{label}}</span>`
+    + (d.base ? `<div class="loc">form of ${{esc(d.base)}}</div>` : '') + means
+    + `<div class="v">Vibration ${{esc(d.vib)}} — ${{esc(d.vibdesc)}}</div>`
+    + d.where.map(x => `<div class="loc">${{esc(x)}}</div>`).join('')
+    + `<div class="loc">source: ${{esc(d.tier)}}</div>`;
+  card.className = 'card show ' + d.kind;
+}}
+function clearAll() {{
+  document.querySelectorAll('.chip.on').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.t.spot').forEach(x => x.classList.remove('spot'));
+  card.className = 'card';
+}}
 cyl.scrollTop = main.offsetTop - cyl.clientHeight / 2 + main.clientHeight / 2;
 document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => {{
   const was = ch.classList.contains('on');
-  document.querySelectorAll('.chip.on').forEach(x => x.classList.remove('on'));
-  document.querySelectorAll('.t.spot').forEach(x => x.classList.remove('spot'));
+  clearAll();
   if (was) return;
   ch.classList.add('on');
+  showCard(ch.dataset.key);
+  ch.closest('.side').scrollTo({{ top: 0, behavior: 'smooth' }});
   let first = null;
   ch.dataset.cells.split(' ').forEach(id => {{ const el = document.getElementById(id); if (el) {{ el.classList.add('spot'); first = first || el; }} }});
   if (first) {{ const row = first.parentElement; if (row.offsetTop < cyl.scrollTop || row.offsetTop > cyl.scrollTop + cyl.clientHeight - 40)
       cyl.scrollTo({{ top: row.offsetTop - cyl.clientHeight / 3, behavior: 'smooth' }}); }}
 }}));
 </script></body></html>"""
+face = face.replace("__INFO__", json.dumps(INFO).replace("</", "<\\/"))
 
 st.markdown("### ◈ The whole cylinder face")
 st.caption("All 26 rows unrolled. Mint = GIFT (read forward, left → right). "
            "Magenta = INTENT (read backward, right → left). Split tiles belong to both.")
-components.html(face, height=580, scrolling=False)
+components.html(face, height=900, scrolling=False)
 
 # ============================================================ READING
 st.write("---")
@@ -337,13 +413,50 @@ st.markdown(f"<div class='panel'><span class='neon-gift'>◆ GIFTS</span> — wh
             f"{chipline(gifts, 'g')}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='panel intent'><span class='neon-intent'>◇ INTENTS</span> — the will beneath it (backward words)"
             f"{chipline(intents, 'i')}</div>", unsafe_allow_html=True)
-story = C.synthesis(word, gifts, intents, num_desc)
+story = C.synthesis(word, gifts, intents, num_desc, MEANINGS)
 st.success(f"**Circumference synthesis:** {story}")
 
+# ---------- what every word means
+st.markdown("### 📖 What the words mean")
+st.caption("Every word the cylinder found, with its meaning, its own Pythagorean vibration, and where it sits. "
+           "Slang, mystic, name and title meanings come first, then the dictionary meaning.")
+
+
+def meaning_card(key):
+    d = INFO[key]
+    color = "gift" if d["kind"] == "gift" else "intent"
+    means = "".join(f"<div class='wm'><span class='wl'>{html.escape(l)}</span>{html.escape(t)}</div>" for l, t in d["lines"]) \
+        or "<div class='wm'><span class='wl'>word</span>valid Scrabble word — no definition on file</div>"
+    base = f"<span class='wb'>form of {html.escape(d['base'])}</span>" if d["base"] else ""
+    where = "<br>".join(html.escape(x) for x in d["where"])
+    return (f"<div class='wcard {color}'><div class='wh'><span class='ww'>{d['w']}</span>{base}"
+            f"<span class='wv'>{html.escape(d['vib'])}</span></div>{means}"
+            f"<div class='wloc'>{where} · {html.escape(d['tier'])}</div></div>")
+
+
+def meaning_list(groups, kind, show=10):
+    if not groups:
+        st.markdown("<i>none found</i>", unsafe_allow_html=True)
+        return
+    st.markdown("".join(meaning_card(f"{kind}:{w}") for w, _, _ in groups[:show]), unsafe_allow_html=True)
+    if len(groups) > show:
+        with st.expander(f"Show all {len(groups)} {'gifts' if kind == 'gift' else 'intents'}"):
+            st.markdown("".join(meaning_card(f"{kind}:{w}") for w, _, _ in groups[show:]), unsafe_allow_html=True)
+
+
+wc1, wc2 = st.columns(2)
+with wc1:
+    st.markdown("<span class='neon-gift'>◆ GIFTS — what is given</span>", unsafe_allow_html=True)
+    meaning_list(gifts, "gift")
+with wc2:
+    st.markdown("<span class='neon-intent'>◇ INTENTS — the will beneath</span>", unsafe_allow_html=True)
+    meaning_list(intents, "intent")
+
 # ============================================================ SAVE / PRINT
-settings_desc = (f"sources={', '.join(enabled) or 'none'}; directions="
-                 f"{'H ' if use_h else ''}{'D ' if use_d else ''}{'V ' if use_v else ''}; "
-                 f"min length={min_len}; nested={'hidden' if hide_nested else 'shown'}; clean={'on' if clean_mode else 'off'}")
+dirs_on = [n for n, on in (("horizontal", use_h), ("diagonal", use_d), ("vertical", use_v)) if on]
+settings_desc = (f"sources: {', '.join(enabled) or 'none'} / directions: {', '.join(dirs_on) or 'none'} / "
+                 f"min length {min_len} / nested words {'hidden' if hide_nested else 'shown'} / "
+                 f"clean mode {'on' if clean_mode else 'off'}")
 stamp = time.strftime('%Y%m%d_%H%M%S')
 
 st.write("---")
@@ -351,13 +464,13 @@ st.markdown("#### ◈ Save & print")
 d1, d2, d3 = st.columns(3)
 with d1:
     st.download_button("📄  TEXT FILE (.txt)",
-                       data=C.build_text_report(word, active_len, grid, found, gifts, intents, num, settings_desc),
+                       data=C.build_text_report(word, active_len, grid, found, gifts, intents, num, settings_desc, MEANINGS),
                        file_name=f"cryptex_{word.lower()}_{stamp}.txt", mime="text/plain", use_container_width=True,
                        help="Plain text with every letter in its own column — open in any editor and print. "
                             "Includes the full cylinder, a GIFT map, an INTENT map and the word lists.")
 with d2:
     st.download_button("🖨️  PRINTABLE PAGE (.html)",
-                       data=C.build_print_html(word, active_len, grid, found, gifts, intents, num),
+                       data=C.build_print_html(word, active_len, grid, found, gifts, intents, num, MEANINGS),
                        file_name=f"cryptex_{word.lower()}_{stamp}.html", mime="text/html", use_container_width=True,
                        help="Open in a browser and print (or Save as PDF). Colored grid, ink-friendly.")
 with d3:

@@ -42,13 +42,18 @@ When a word is dialed onto the main row, the other 25 rows around the cylinder l
   | Crude & adult slang | ~70 | on |
   | Full Scrabble dictionary (ENABLE) | ~18,900 | on |
   | Deep lexicon — rare words, abbreviations, names | ~26,700 | off |
+- **What every word means** — tap any word for a pop-up card, and the reading lists every Gift and Intent with:
+  - its meaning in plain English (slang, mystic, name and title meanings written for this app, then the dictionary meaning)
+  - its own Pythagorean vibration and archetype
+  - exactly where it sits (direction, starting row and ring) — Intents also show how they look on the rings left to right
+  - about 85% of words found on a typical spin have a meaning; the rest are rare Scrabble words
 - **Clean mode** — one switch hides swears and adult words.
 - **Hide nested words** — keeps EAR from cluttering the list when HEART is found (can be turned off).
 - **Ring dials** — ▲ / ▼ for each ring, side by side even on a phone.
 - **Random Spin** and **Align Word** (type up to 6 letters, press Enter).
 - **Oracle reading** — Pythagorean vibration (1–9) of the main word, letter meanings, gifts, intents and a synthesis.
 - **Save & print**
-  - **Text file (.txt)** — every letter in its own fixed-width column, so the grid lines up when printed. Includes the full cylinder, a GIFT map, an INTENT map and tables of every word with its direction, start row and ring.
+  - **Text file (.txt)** — every letter in its own fixed-width column, so the grid lines up when printed. Includes the full cylinder, a GIFT map, an INTENT map, and every word with its meaning, vibration, direction, start row and ring.
   - **Printable page (.html)** — open in a browser and print or Save as PDF; colored, ink-friendly grid.
   - **Reading log** — save readings during your session and download them as a .txt.
 
@@ -86,13 +91,18 @@ Cryptex/
 │   ├── crude.txt           # Crude & adult slang            ← hand-written, add your own
 │   ├── dictionary.txt      # Full ENABLE Scrabble dictionary
 │   ├── deep.txt            # Rare words, abbreviations & names
-│   └── clean_filter.txt    # Extra words hidden by Clean mode
+│   ├── clean_filter.txt    # Extra words hidden by Clean mode
+│   ├── glosses.txt         # Hand-written meanings (slang, mystic, names, titles, crude)  ← add your own
+│   └── definitions.tsv     # Dictionary meanings (WordNet + Webster 1913)
 ├── tools/build_lexicon.py  # Rebuilds the generated word lists from their sources
+├── tools/build_definitions.py  # Rebuilds definitions.tsv
 ├── .streamlit/config.toml  # Dark neon theme
 └── requirements.txt
 ```
 
 **Adding words:** open `lexicon/slang.txt`, `mystic.txt` or `crude.txt` and add one word per line (3–6 letters). Lines starting with `#` are notes and are ignored.
+
+**Adding meanings:** open `lexicon/glosses.txt` and add a line like `RIZZ | slang | charm, the ability to attract someone`. Your meanings show up before the dictionary's.
 
 ---
 
@@ -102,6 +112,8 @@ Cryptex/
 - **popular.txt** (common-word subset of ENABLE + Wiktionary frequency lists) — [dolph/dictionary](https://github.com/dolph/dictionary)
 - **english-words** — public domain (Unlicense), [dwyl/english-words](https://github.com/dwyl/english-words)
 - Clean-mode list derived from [first20hours/google-10000-english](https://github.com/first20hours/google-10000-english)
-- Slang, mystic and crude lists written for this project
+- Definitions: [Open English WordNet](https://github.com/globalwordnet/english-wordnet) (CC BY 4.0), derived from Princeton WordNet 3.0 — © Princeton University and the Open English Wordnet team
+- Older definitions (tagged "1913"): Webster's Unabridged Dictionary, public domain, via Project Gutenberg / [matthewreagan/WebstersEnglishDictionary](https://github.com/matthewreagan/WebstersEnglishDictionary)
+- Slang, mystic and crude lists and their meanings written for this project
 
 Original device: **Drew**. App: **Erin Rae Toppe** ([RN-Top](https://github.com/RN-Top)).

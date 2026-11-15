@@ -96,6 +96,84 @@ def build_lookup(tiers, clean_filter, enabled, clean_mode=False):
     return lookup
 
 
+# ---------------------------------------------------------------- meanings
+IRREGULAR = {
+    "RAN": "RUN", "WENT": "GO", "GONE": "GO", "SAT": "SIT", "SANG": "SING", "SUNG": "SING", "SAW": "SEE",
+    "SEEN": "SEE", "ATE": "EAT", "EATEN": "EAT", "BEGAN": "BEGIN", "BEGUN": "BEGIN", "BROKE": "BREAK",
+    "CAME": "COME", "DID": "DO", "DONE": "DO", "DREW": "DRAW", "DRANK": "DRINK", "DROVE": "DRIVE",
+    "FELL": "FALL", "FELT": "FEEL", "FLEW": "FLY", "FORGOT": "FORGET", "FROZE": "FREEZE", "GAVE": "GIVE",
+    "GREW": "GROW", "HID": "HIDE", "HELD": "HOLD", "KEPT": "KEEP", "KNEW": "KNOW", "KNOWN": "KNOW",
+    "LAID": "LAY", "LED": "LEAD", "LEFT": "LEAVE", "LENT": "LEND", "LOST": "LOSE", "MADE": "MAKE",
+    "MET": "MEET", "PAID": "PAY", "RANG": "RING", "RODE": "RIDE", "ROSE": "RISE", "RISEN": "RISE",
+    "SAID": "SAY", "SENT": "SEND", "SHOOK": "SHAKE", "SHONE": "SHINE", "SHOT": "SHOOT", "SLEPT": "SLEEP",
+    "SPOKE": "SPEAK", "SPENT": "SPEND", "SPUN": "SPIN", "STOLE": "STEAL", "STOOD": "STAND", "STUCK": "STICK",
+    "SWAM": "SWIM", "SWORE": "SWEAR", "TAUGHT": "TEACH", "TOLD": "TELL", "TOOK": "TAKE", "TORE": "TEAR",
+    "THREW": "THROW", "WOKE": "WAKE", "WON": "WIN", "WORE": "WEAR", "WOVE": "WEAVE", "WROTE": "WRITE",
+    "MEN": "MAN", "WOMEN": "WOMAN", "FEET": "FOOT", "TEETH": "TOOTH", "MICE": "MOUSE", "GEESE": "GOOSE",
+    "BETTER": "GOOD", "BEST": "GOOD", "WORSE": "BAD", "WORST": "BAD",
+}
+
+
+def load_meanings(lexicon_dir=LEXICON_DIR):
+    """Return (glosses, definitions).
+    glosses:     WORD -> [(kind, text)]   hand-written slang/mystic/title/name/crude meanings
+    definitions: WORD -> [(pos, text)] or the string '=BASE' for word forms (DOGS -> =DOG)
+    """
+    glosses, definitions = {}, {}
+    gpath = os.path.join(lexicon_dir, "glosses.txt")
+    if os.path.exists(gpath):
+        with open(gpath, encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("#") or "|" not in line:
+                    continue
+                parts = [x.strip() for x in line.split("|", 2)]
+                if len(parts) == 3 and parts[0]:
+                    glosses.setdefault(parts[0].upper(), []).append((parts[1], parts[2]))
+    dpath = os.path.join(lexicon_dir, "definitions.tsv")
+    if os.path.exists(dpath):
+        with open(dpath, encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) == 2 and parts[1].startswith("="):
+                    definitions[parts[0]] = parts[1]
+                elif len(parts) >= 3:
+                    definitions[parts[0]] = [(parts[i], parts[i + 1]) for i in range(1, len(parts) - 1, 2)]
+    return glosses, definitions
+
+
+def explain(word, meanings):
+    """Plain-language explanation of one word.
+    Returns dict(lines=[(label, text)], base=WORD or None, vibration=(n, title, desc))."""
+    glosses, definitions = meanings
+    lines, base = [], None
+    for kind, text in glosses.get(word, []):
+        lines.append((kind, text))
+    d = definitions.get(word)
+    if d is None and word in IRREGULAR:
+        d = "=" + IRREGULAR[word]
+    if isinstance(d, str):
+        base = d[1:]
+        d = definitions.get(base)
+        if isinstance(d, str):
+            d = None
+        if not lines:
+            for kind, text in glosses.get(base, []):
+                lines.append((kind, text))
+    if d:
+        lines.extend(d if not lines else d[:1])  # slang/mystic meaning first, then the dictionary sense
+    n, title, desc, _ = numerology(word)
+    return {"lines": lines, "base": base, "vibration": (n, title, desc)}
+
+
+def short_meaning(info, n=80):
+    if not info["lines"]:
+        return ""
+    t = info["lines"][0][1]
+    return t if len(t) <= n else t[: n - 1].rsplit(" ", 1)[0] + "…"
+
+
 # ---------------------------------------------------------------- cylinder
 def build_grid(offsets):
     """26 x 6 list of letters. Row CENTER is the main row."""
@@ -165,14 +243,21 @@ def rank_key(word, tier):
     return (TIER_RANK.get(tier, 9), -len(word), word)
 
 
-def group_words(found, kind):
-    """Unique words of one kind, best first: list of (word, tier, [occurrences])."""
+def group_words(found, kind, meanings=None):
+    """Unique words of one kind, best first: list of (word, tier, [occurrences]).
+    With meanings given, words that have a definition rank above words that don't."""
     groups = {}
     for o in found:
         if o["kind"] == kind:
             groups.setdefault(o["word"], []).append(o)
     out = [(w, occ[0]["tier"], occ) for w, occ in groups.items()]
-    out.sort(key=lambda g: rank_key(g[0], g[1]))
+
+    def key(g):
+        k = rank_key(g[0], g[1])
+        if meanings is not None and not explain(g[0], meanings)["lines"]:
+            k = (k[0] + 3,) + k[1:]
+        return k
+    out.sort(key=key)
     return out
 
 
@@ -186,16 +271,23 @@ def numerology(word):
     return total, title, desc, guide
 
 
-def synthesis(main_word, gifts, intents, num_desc):
-    g = [w for w, _, _ in gifts[:6]]
-    i = [w for w, _, _ in intents[:6]]
+def synthesis(main_word, gifts, intents, num_desc, meanings=None):
+    g = [w for w, _, _ in gifts if w != main_word][:6]   # the aligned word itself isn't a gift
+    i = [w for w, _, _ in intents if w != main_word][:6]
+
+    def gloss(w):
+        if not meanings:
+            return ""
+        m = short_meaning(explain(w, meanings))
+        return f" ({m})" if m else ""
+
     parts = []
     if g:
         parts.append(f"The cylinder offers its GIFTS around {main_word}: {', '.join(g)}. "
-                     f"{g[0]} is the strongest gift being handed to you.")
+                     f"{g[0]}{gloss(g[0])} is the strongest gift being handed to you.")
     if i:
         parts.append(f"Read backward, it reveals the INTENT moving beneath: {', '.join(i)}. "
-                     f"{i[0]} is the will behind this turn of the rings.")
+                     f"{i[0]}{gloss(i[0])} is the will behind this turn of the rings.")
     if g and i:
         parts.append(f"Hold {g[0]} (what is given) together with {i[0]} (what is meant), "
                      f"and let {main_word} guide you toward {num_desc[0].lower() + num_desc[1:]}")
@@ -207,7 +299,7 @@ def synthesis(main_word, gifts, intents, num_desc):
 
 # ---------------------------------------------------------------- printable text file
 def _ascii(s):
-    s = s.replace("—", "-").replace("–", "-").replace("’", "'").replace("•", "*")
+    s = s.replace("—", "-").replace("–", "-").replace("’", "'").replace("•", "*").replace("…", "...")
     return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
 
 
@@ -243,7 +335,7 @@ def _grid_lines(grid, active_len, show=None):
     return lines
 
 
-def build_text_report(main_word, active_len, grid, found, gifts, intents, num, settings):
+def build_text_report(main_word, active_len, grid, found, gifts, intents, num, settings, meanings=None):
     total, title, desc, guide = num
     W = 78
     bar, thin = "=" * W, "-" * W
@@ -254,8 +346,10 @@ def build_text_report(main_word, active_len, grid, found, gifts, intents, num, s
          f"  Timestamp      : {time.strftime('%Y-%m-%d %H:%M:%S')}",
          f"  Main word      : {main_word}  ({active_len} letters)",
          f"  Vibration      : {total} - {title}",
-         f"  Search         : {_ascii(settings)}",
-         "", "  Letter values:"]
+         ]
+    sw = _wrap(settings, width=57, indent="")
+    L += [f"  Search         : {sw[0] if sw else ''}"] + [" " * 19 + x for x in sw[1:]]
+    L += ["", "  Letter values:"]
     for c in main_word:
         L.append(f"    {c} = {PYTHAGOREAN_VALUES.get(c, 0)}   {LETTER_MEANINGS.get(c, '')}")
     L += ["", "  Essence:"] + _wrap(desc, indent="    ") + ["", "  Guidance:"] + _wrap(guide, indent="    ")
@@ -273,29 +367,43 @@ def build_text_report(main_word, active_len, grid, found, gifts, intents, num, s
           "  Only letters that belong to an INTENT word are shown.", ""]
     L += _grid_lines(grid, active_len, show=intent_cells)
 
-    def word_table(groups, heading):
+    def word_table(groups, heading, kind):
         out = ["", bar, heading, bar]
         if not groups:
             return out + ["  (none found)"]
-        out.append(f"  {'WORD':<8}{'DIRECTION':<12}{'START ROW':<11}{'RING':<6}{'SOURCE'}")
-        out.append("  " + "-" * 74)
         for w, tier, occ in groups:
+            n, t, _ = numerology(w)[:3]
+            out.append("")
+            out.append(f"  {w:<8} vibration {n} - {t}   |   source: {_ascii(TIER_LABEL.get(tier, tier))}")
             for o in occ:
                 r0, c0 = o["cells"][0]
-                out.append(f"  {w:<8}{o['dir']:<12}{row_label(r0):<11}{c0 + 1:<6}{_ascii(TIER_LABEL.get(tier, tier))}")
+                where = f"starts row {row_label(r0)}, ring {c0 + 1}, reads {o['dir']}"
+                if kind == "intent":
+                    letters = "".join(grid[r][c] for r, c in sorted(o["cells"], key=lambda rc: rc[1]))
+                    where += f"  (on the rings: {letters})"
+                out.append(f"    - {where}")
+            if meanings:
+                info = explain(w, meanings)
+                if info["base"]:
+                    out.append(f"    form of: {info['base']}")
+                if info["lines"]:
+                    for label, text in info["lines"]:
+                        out += _wrap(f"{label}: {text}", width=72, indent="    ")
+                else:
+                    out.append("    meaning: (valid word - no definition on file)")
         return out
 
-    L += word_table(gifts, f"  4. GIFTS - {len(gifts)} forward word(s)")
-    L += word_table(intents, f"  5. INTENTS - {len(intents)} backward word(s)")
+    L += word_table(gifts, f"  4. GIFTS - {len(gifts)} forward word(s) - what is given", "gift")
+    L += word_table(intents, f"  5. INTENTS - {len(intents)} backward word(s) - the will beneath", "intent")
 
     L += ["", bar, "  6. CIRCUMFERENCE SYNTHESIS", bar]
-    L += _wrap(synthesis(main_word, gifts, intents, desc))
+    L += _wrap(synthesis(main_word, gifts, intents, desc, meanings))
     L += [bar, ""]
     return "\n".join(_ascii(x) for x in L)
 
 
 # ---------------------------------------------------------------- printable HTML page
-def build_print_html(main_word, active_len, grid, found, gifts, intents, num):
+def build_print_html(main_word, active_len, grid, found, gifts, intents, num, meanings=None):
     total, title, desc, guide = num
     gift_cells = {cell for o in found if o["kind"] == "gift" for cell in o["cells"]}
     intent_cells = {cell for o in found if o["kind"] == "intent" for cell in o["cells"]}
@@ -317,11 +425,20 @@ def build_print_html(main_word, active_len, grid, found, gifts, intents, num):
     def tbl(groups):
         if not groups:
             return "<p><i>None found.</i></p>"
-        trs = "".join(
-            f"<tr><td><b>{w}</b></td><td>{o['arrow']} {o['dir']}</td><td>{row_label(o['cells'][0][0])}</td>"
-            f"<td>{o['cells'][0][1] + 1}</td><td>{html.escape(TIER_LABEL.get(t, t))}</td></tr>"
-            for w, t, occ in groups for o in occ)
-        return f"<table class='list'><tr><th>Word</th><th>Direction</th><th>Start row</th><th>Ring</th><th>Source</th></tr>{trs}</table>"
+        trs = ""
+        for w, t, occ in groups:
+            n, title_w, _ = numerology(w)[:3]
+            where = "<br>".join(f"{o['arrow']} {o['dir'].lower()} from row {row_label(o['cells'][0][0])}, ring {o['cells'][0][1] + 1}"
+                                for o in occ)
+            mean = ""
+            if meanings:
+                info = explain(w, meanings)
+                mean = "<br>".join(f"<i>{html.escape(l)}</i> {html.escape(x)}" for l, x in info["lines"]) or "<i>no definition on file</i>"
+                if info["base"]:
+                    mean = f"<small>form of {info['base']}</small><br>" + mean
+            trs += (f"<tr><td><b>{w}</b><br><small>{n} &middot; {html.escape(title_w)}</small></td>"
+                    f"<td>{mean}</td><td><small>{where}<br>{html.escape(TIER_LABEL.get(t, t))}</small></td></tr>")
+        return f"<table class='list'><tr><th>Word</th><th>Meaning</th><th>Where</th></tr>{trs}</table>"
 
     return f"""<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cryptex werd - {main_word}</title>
 <style>
@@ -332,7 +449,7 @@ h1{{letter-spacing:4px;margin:0}} h1 .x{{font-size:1.6em;color:#00a37a}}
 .grid th{{font:600 12px monospace;padding-right:8px;text-align:right;color:#555}}
 .grid td.g{{background:#c8f7e6}} .grid td.i{{background:#f7c8ee}} .grid td.g.i{{background:linear-gradient(135deg,#c8f7e6 50%,#f7c8ee 50%)}}
 .grid td.m{{outline:3px solid #000;outline-offset:-3px}} .grid td.mo{{color:#999}}
-.list{{border-collapse:collapse;width:100%;font-size:13px}} .list td,.list th{{border-bottom:1px solid #ddd;padding:3px 6px;text-align:left}}
+.list{{border-collapse:collapse;width:100%;font-size:13px}} .list td,.list th{{border-bottom:1px solid #ddd;padding:5px 6px;text-align:left;vertical-align:top}} .list tr{{page-break-inside:avoid}}
 .key span{{display:inline-block;padding:2px 8px;margin-right:6px;border:1px solid #999}}
 @media print{{ .grid td{{-webkit-print-color-adjust:exact;print-color-adjust:exact}} }}
 </style></head><body>
@@ -343,5 +460,5 @@ h1{{letter-spacing:4px;margin:0}} h1 .x{{font-size:1.6em;color:#00a37a}}
 <h2>Gifts ({len(gifts)})</h2>{tbl(gifts)}
 <h2>Intents ({len(intents)})</h2>{tbl(intents)}
 <h2>Reading</h2><p><b>{title}:</b> {html.escape(desc)}</p><p>{html.escape(guide)}</p>
-<p>{html.escape(synthesis(main_word, gifts, intents, desc))}</p>
+<p>{html.escape(synthesis(main_word, gifts, intents, desc, meanings))}</p>
 </body></html>"""
