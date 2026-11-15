@@ -1,4 +1,5 @@
 import html
+import importlib
 import json
 import random
 import time
@@ -8,6 +9,12 @@ import streamlit.components.v1 as components
 
 import cryptex_core as C
 import cryptex_reading as R
+
+# Streamlit Cloud reloads app.py when the repo updates, but can keep older copies of these
+# helper modules in memory, which causes errors like "TypeError ... arguments". Reloading
+# them on every run guarantees app.py and its helpers always match.
+C = importlib.reload(C)
+R = importlib.reload(R)
 
 st.set_page_config(page_title="Cryptex werd", page_icon="🗝️", layout="wide")
 
@@ -112,6 +119,14 @@ hr { border-color: rgba(0,255,198,.25) !important; }
 .wm { font-size:16px; color:#effffa; margin-top:4px; line-height:1.45; }
 .wl { display:inline-block; min-width:54px; font-family:'Share Tech Mono',monospace; font-size:12px; color: var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-right:6px; }
 .wloc { font-size:13px; color:#8fd9c7; margin-top:6px; }
+.stats { display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin: 6px 0 14px 0; }
+@media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.stat { background: rgba(0,0,0,.75); border:1px solid rgba(0,229,255,.4); border-radius:12px; padding:10px 14px;
+    box-shadow: 0 0 10px rgba(0,229,255,.12); }
+.stat .sl { font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:1.5px; color:#8fd9c7; }
+.stat .sv { font-family:'Orbitron',sans-serif; font-size:24px; font-weight:700; color: var(--mint); text-shadow:0 0 8px rgba(0,255,198,.6); margin-top:2px; }
+.stat.g .sv { color: var(--mint); } .stat.i .sv { color: var(--magenta); text-shadow:0 0 8px rgba(255,43,214,.6); }
+.stat.i { border-color: rgba(255,43,214,.4); }
 .rsec { border:1px solid rgba(0,255,198,.35); border-radius:14px; padding: 12px 18px 4px 18px; margin: 10px 0;
     background: linear-gradient(180deg, rgba(0,20,16,.75), rgba(0,0,0,.75)); box-shadow: 0 0 14px rgba(0,255,198,.08); }
 .rsec.intent { border-color: rgba(255,43,214,.4); background: linear-gradient(180deg, rgba(20,0,16,.7), rgba(0,0,0,.75)); }
@@ -235,11 +250,13 @@ num = C.numerology(word)
 total_num, num_title, num_desc, num_guidance = num
 
 st.write("---")
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Main word", word)
-m2.metric("Vibration", f"{total_num} · {num_title.replace('The ', '')}")
-m3.metric("Gifts (forward)", len(gifts))
-m4.metric("Intents (backward)", len(intents))
+st.markdown(
+    "<div class='stats'>"
+    f"<div class='stat'><div class='sl'>MAIN WORD</div><div class='sv'>{word}</div></div>"
+    f"<div class='stat'><div class='sl'>VIBRATION</div><div class='sv'>{total_num} · {num_title.replace('The ', '')}</div></div>"
+    f"<div class='stat g'><div class='sl'>GIFTS · FORWARD</div><div class='sv'>{len(gifts)}</div></div>"
+    f"<div class='stat i'><div class='sl'>INTENTS · BACKWARD</div><div class='sv'>{len(intents)}</div></div>"
+    "</div>", unsafe_allow_html=True)
 
 # ============================================================ CYLINDER FACE (interactive)
 gift_cells = {cell for o in found if o["kind"] == "gift" for cell in o["cells"]}
