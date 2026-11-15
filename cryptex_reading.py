@@ -405,36 +405,62 @@ def build_reading(main_word, active_len, offsets, grid, found, gifts, intents, m
     # 7b. The plain truth -------------------------------------------------------------------
     sections.append(("The plain truth", plain_truth(main_word, gifts, intents, meanings)))
 
-    # 8. Counsel ---------------------------------------------------------------------------------
+    # 8. Counsel --------------------------------------------------------------------------------
     p = []
+    kind, d = verdict(main_word, gifts, intents, meanings)
+
+    def wm(w):
+        t = gist(w, meanings, 6) if w else ""
+        return f"{w} ({t})" if t else (w or "")
+
     g0 = gifts[0][0] if gifts else None
     i0 = intents[0][0] if intents else None
-    if g0 and i0:
-        gm, _ = meaning_of(g0, meanings, 70)
-        im, _ = meaning_of(i0, meanings, 70)
-        p.append(pick([
-            f"Take {g0} as what you are being given{' - ' + lower_first(gm[1]) if gm and gm[0] != 'name' else ''}. "
-            f"Understand {i0} as the reason{' - ' + lower_first(im[1]) if im and im[0] != 'name' else ''}. "
-            f"Let {main_word} be how you carry both.",
-            f"The cylinder hands you {g0} and shows you {i0} underneath it. "
-            f"Receive the first; question the second; and stand on {main_word} while you do.",
-        ]))
-    elif g0:
-        p.append(f"Receive {g0}. Nothing hidden is driving this - it is simply being offered. Let {main_word} be your answer to it.")
-    elif i0:
-        p.append(f"Nothing is being handed over yet; only the motive shows: {i0}. Work on the why before you expect the what.")
-    p.append(main_guide)
-    if whole != main_n:
-        p.append(wg)
+    if kind == "warn":
+        bad_g = d["gw"][0] if d["gw"] else None
+        bad_i = d["iw"][0] if d["iw"] else None
+        if bad_i:
+            p.append(f"The problem is the motive. {wm(bad_i)} is what's really driving this - deal with that before anything else.")
+        if bad_g:
+            p.append(f"Do not accept {wm(bad_g)} just because it's being offered.")
+        if g0 and g0 != bad_g:
+            p.append(f"Even {wm(g0)} - the strongest Gift - should be checked before you take it.")
+        p.append(f"Hold to {main_word} and don't let this turn pull you off it.")
+    elif kind == "good":
+        best_g = d["gg"][0] if d["gg"] else g0
+        p.append(f"Take {wm(best_g)}." if best_g else "Nothing new is handed over, but the motive is clean.")
+        if d["ig"] and d["iw"]:
+            p.append(f"The motive underneath is mostly on your side - {wm(d['ig'][0])} - "
+                     f"but keep an eye on {wm(d['iw'][0])}.")
+        elif d["ig"]:
+            p.append(f"The motive underneath - {wm(d['ig'][0])} - is on your side. This one is safe to accept.")
+        elif d["iw"]:
+            p.append(f"Accept it, but watch {wm(d['iw'][0])} underneath it.")
+        elif i0:
+            p.append(f"{wm(i0)} sits underneath it; nothing in it works against you.")
+        p.append(f"Let {main_word} be how you carry it.")
+    elif kind == "mixed":
+        good_w = (d["gg"] + d["ig"])[:1]
+        bad_w = (d["iw"] + d["gw"])[:1]
+        p.append(f"Take what's good{' - ' + wm(good_w[0]) if good_w else ''}. "
+                 f"Refuse what isn't{' - ' + wm(bad_w[0]) if bad_w else ''}. "
+                 f"Don't swallow this turn whole; sort it piece by piece, with {main_word} as your measure.")
+    else:
+        p.append(f"Nothing here pushes you either way. {main_word} is the only real signal - the choice is yours.")
+
+    # one clear order of action instead of two clashing pieces of advice
+    if whole == main_n:
+        p.append(f"Both the word and the whole reading land on {main_n}: {NUMBER_ACTION[main_n]}. {main_guide}")
+    else:
+        caveat = " - but only once the warning is dealt with" if kind == "warn" else ""
+        p.append(f"{main_word}'s own number, {main_n}, says {NUMBER_ACTION[main_n]}. "
+                 f"The whole reading, {whole}, says {NUMBER_ACTION[whole]}. "
+                 f"Do them in that order: first {NUMBER_ACTION[main_n]}, then {NUMBER_ACTION[whole]}{caveat}.")
     q = pick(NUMBER_QUESTIONS[whole])
     p.append(f"A question to carry with you: {q}")
-    if g0 or i0:
-        essence = []
-        if g0:
-            essence.append(f"given {g0}")
-        if i0:
-            essence.append(f"meant {i0}")
-        p.append(f"In one breath: {main_word}, {' and '.join(essence)}, resolving to {whole} - {NUMBER_KEY[whole]}.")
+    label = {"warn": "a warning", "good": "a good sign", "mixed": "mixed", "neutral": "neutral"}[kind]
+    essence = [x for x in (f"given {g0}" if g0 else "", f"meant {i0}" if i0 else "") if x]
+    p.append(f"In one breath: {main_word}{', ' + ' and '.join(essence) if essence else ''} - {label} - "
+             f"resolving to {whole}, {NUMBER_KEY[whole]}.")
     sections.append(("Counsel", p))
     return sections
 
@@ -467,7 +493,7 @@ NUMBER_ACTION = {
 
 _TRAILING = {"a", "an", "the", "of", "to", "in", "into", "on", "for", "with", "and", "or", "so", "as",
              "by", "at", "from", "that", "which", "is", "being", "its", "your", "their", "his", "her",
-             "who", "through", "about", "usually", "noted", "especially", "when", "where", "than", "are", "was"}
+             "who", "through", "about", "be", "or", "if", "but", "usually", "noted", "especially", "when", "where", "than", "are", "was"}
 
 
 def gist(w, meanings, words=5):
@@ -580,7 +606,7 @@ SLAY SMART SMILE SOAR SOUL SPARK STAR STARS STRONG SUN SURE SWAG SWEET THANK THR
 VIBE VIBES VICTOR VOW WARM WEALTH WED WELL WIN WINS WISDOM WISE WON WONDER WORTH WOW YAS YASS YAY YES YUM ZEN ZEST
 """.split())
 WARN_MEANING = re.compile(r"\b(harm|hurt|pain|painful|death|dead|die|kill|violent|violence|attack|injur\w*|wound|disease|illness|sick|"
-                          r"poison|evil|wicked|cruel|insult|enemy|opponent|fear|terror|danger|threat|fail|failure|loss|lose|"
+                          r"poison|evil|wicked|cruel|insult|enemy|fear|terror|danger|threat|fail|failure|loss|lose|"
                           r"mistake|deceiv|cheat|lie |lying|steal|theft|rob|destroy|ruin|decay|rot|grief|sorrow|anger|angry|"
                           r"hostil|disgust|shame|guilt|curse|demon|devil|abuse|annoy|irritat|bitter|suspicious|untrust|"
                           r"torn violently|tear or be torn|drunk|intoxicat|offensive|vulgar)", re.I)
@@ -606,7 +632,8 @@ def tone(w, meanings):
     m, _ = meaning_of(w, meanings, 400)
     if not m:
         return 0
-    bad, good = bool(WARN_MEANING.search(m[1])), bool(GOOD_MEANING.search(m[1]))
+    text = re.sub(r"\([^)]*\)", "", m[1])
+    bad, good = bool(WARN_MEANING.search(text)), bool(GOOD_MEANING.search(text))
     if bad and not good:
         return -1
     if good and not bad:
@@ -614,15 +641,30 @@ def tone(w, meanings):
     return 0
 
 
-def plain_truth(main_word, gifts, intents, meanings):
-    """A blunt verdict: warning, good sign, or mixed - with the words that make it so."""
+def verdict(main_word, gifts, intents, meanings):
+    """Return (kind, details) where kind is 'warn', 'good', 'mixed' or 'neutral'."""
     g = [w for w, _, _ in gifts if w != main_word]
     i = [w for w, _, _ in intents if w != main_word]
-    gw = [w for w in g if tone(w, meanings) < 0]
-    gg = [w for w in g if tone(w, meanings) > 0]
-    iw = [w for w in i if tone(w, meanings) < 0]
-    ig = [w for w in i if tone(w, meanings) > 0]
-    main_t = tone(main_word, meanings)
+    d = {"gw": [w for w in g if tone(w, meanings) < 0], "gg": [w for w in g if tone(w, meanings) > 0],
+         "iw": [w for w in i if tone(w, meanings) < 0], "ig": [w for w in i if tone(w, meanings) > 0],
+         "main": tone(main_word, meanings)}
+    warn = len(d["gw"]) + 1.5 * len(d["iw"]) + (1 if d["main"] < 0 else 0)
+    good = len(d["gg"]) + 1.5 * len(d["ig"]) + (1 if d["main"] > 0 else 0)
+    if warn == 0 and good == 0:
+        kind = "neutral"
+    elif warn >= good * 1.5:
+        kind = "warn"
+    elif good >= warn * 1.5:
+        kind = "good"
+    else:
+        kind = "mixed"
+    return kind, d
+
+
+def plain_truth(main_word, gifts, intents, meanings):
+    """A blunt verdict: warning, good sign, or mixed - with the words that make it so."""
+    kind, d = verdict(main_word, gifts, intents, meanings)
+    gw, gg, iw, ig, main_t = d["gw"], d["gg"], d["iw"], d["ig"], d["main"]
 
     def tag(ws, n=5):
         out = []
@@ -631,31 +673,27 @@ def plain_truth(main_word, gifts, intents, meanings):
             out.append(f"{w} ({t})" if t else w)
         return join_words(out)
 
-    warn = len(gw) + 1.5 * len(iw) + (1 if main_t < 0 else 0)   # a bad motive counts heavier than a bad gift
-    good = len(gg) + 1.5 * len(ig) + (1 if main_t > 0 else 0)
     lines = []
-    if warn == 0 and good == 0:
-        lines.append(f"The truth: this turn is neutral - no clear warning, no clear blessing. "
-                     f"Nothing here is pushing you either way; what happens next is on you.")
-        return lines
-    if warn >= good * 1.5:
-        lines.append("The truth: this is a WARNING.")
-    elif good >= warn * 1.5:
-        lines.append("The truth: this is a GOOD SIGN.")
-    else:
-        lines.append("The truth: this is MIXED - real good and real trouble in the same turn.")
-    if iw:
+    if kind == "neutral":
+        return ["The truth: this turn is neutral - no clear warning, no clear blessing. "
+                "Nothing here is pushing you either way; what happens next is on you."]
+    lines.append({"warn": "The truth: this is a WARNING.", "good": "The truth: this is a GOOD SIGN.",
+                  "mixed": "The truth: this is MIXED - real good and real trouble in the same turn."}[kind])
+    if iw and ig:
+        lines.append(f"The motive is split: {tag(ig)} {'works' if len(ig) == 1 else 'work'} for you, but "
+                     f"{tag(iw)} {'works' if len(iw) == 1 else 'work'} against you. Not everyone behind this wants the same thing.")
+    elif iw:
         lines.append(f"Watch the motive: the intent underneath carries {tag(iw)}. "
                      f"Something - or someone - in this situation is not acting in your favor, and it won't announce itself.")
+    elif ig:
+        lines.append(f"The motive behind it is sound: {tag(ig)}. The reason underneath is on your side.")
     if gw:
         lines.append(f"Not everything coming at you is welcome: {tag(gw)} "
                      f"{'is' if len(gw) == 1 else 'are'} among the Gifts. Don't accept everything you're handed.")
     if gg:
         lines.append(f"What's genuinely good: {tag(gg)}. That part is real - take it.")
-    if ig:
-        lines.append(f"The motive behind it is sound: {tag(ig)}. The reason underneath is on your side.")
     if main_t < 0:
         lines.append(f"Even the main word, {main_word}, leans dark. Be honest about why you set it.")
-    if warn > good and not ig:
+    if kind == "warn":
         lines.append("Don't explain it away. Act on it.")
     return lines

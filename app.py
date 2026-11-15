@@ -126,6 +126,10 @@ hr { border-color: rgba(0,255,198,.25) !important; }
     text-shadow: 0 0 8px rgba(255,43,214,.7); margin-bottom:6px; }
 .condensed p { font-size: 19px; line-height: 1.6; color: #fff; margin: 0 0 10px 0; }
 .condensed p.truth { border-top: 1px solid rgba(0,255,198,.3); padding-top: 10px; }
+.rsec .warn { color: var(--magenta); font-weight: 800; text-shadow: 0 0 10px rgba(255,43,214,.9); }
+.rsec .good { color: var(--mint); font-weight: 800; text-shadow: 0 0 10px rgba(0,255,198,.9); }
+.rsec .mixed { color: var(--cyan); font-weight: 800; text-shadow: 0 0 10px rgba(0,229,255,.9); }
+.rsec p.truth { border-top: none; padding-top: 0; }
 .condensed .warn { color: var(--magenta); font-weight: 800; text-shadow: 0 0 10px rgba(255,43,214,.9); }
 .condensed .good { color: var(--mint); font-weight: 800; text-shadow: 0 0 10px rgba(0,255,198,.9); }
 .condensed .mixed { color: var(--cyan); font-weight: 800; text-shadow: 0 0 10px rgba(0,229,255,.9); }
@@ -448,7 +452,8 @@ def brief_html(text):
 st.markdown(f"<div class='condensed'><div class='ch'>✦ THE READING IN BRIEF</div>"
             f"<p>{brief_html(story)}</p></div>", unsafe_allow_html=True)
 for i, (head, paras) in enumerate(READING):
-    body = "".join(f"<p>{html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>" for x in paras)
+    body = "".join(f"<p>{brief_html(x.replace(' -> ', ' → ')) if x.startswith('The truth:') else html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>"
+                   for x in paras)
     kind = " intent" if head.startswith("The Intents") else ""
     st.markdown(f"<div class='rsec{kind}'><div class='rhead'><span class='rnum'>{i + 1:02d}</span>{html.escape(head)}</div>"
                 f"{body}</div>", unsafe_allow_html=True)
