@@ -403,6 +403,9 @@ def build_text_report(main_word, active_len, grid, found, gifts, intents, num, s
     L += ["", bar, "  6. THE ORACLE READING", bar]
     if reading:
         for head, paras in reading:
+            if head == "The reading in brief":
+                L += ["", "  THE READING IN BRIEF", "  " + "-" * 20] + _wrap(paras[0], width=74) + [""]
+                continue
             L += ["", f"  {_ascii(head).upper()}", "  " + "-" * min(len(_ascii(head)), 74)]
             for para in paras:
                 L += _wrap(para, width=74) + [""]
@@ -451,7 +454,10 @@ def build_print_html(main_word, active_len, grid, found, gifts, intents, num, me
         return f"<table class='list'><tr><th>Word</th><th>Meaning</th><th>Where</th></tr>{trs}</table>"
 
     if reading:
-        reading_html = "".join(f"<h3>{html.escape(h)}</h3>" + "".join(f"<p>{html.escape(x)}</p>" for x in ps)
+        reading_html = "".join((f"<div style='border:2px solid #00a37a;border-radius:10px;padding:8px 14px;margin:8px 0'>"
+                                f"<b>The reading in brief</b><p style='font-size:17px'>{html.escape(ps[0])}</p></div>")
+                               if h == "The reading in brief" else
+                               f"<h3>{html.escape(h)}</h3>" + "".join(f"<p>{html.escape(x)}</p>" for x in ps)
                                for h, ps in reading)
     else:
         reading_html = (f"<p><b>{title}:</b> {html.escape(desc)}</p><p>{html.escape(guide)}</p>"

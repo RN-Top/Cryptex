@@ -119,6 +119,12 @@ hr { border-color: rgba(0,255,198,.25) !important; }
 .wm { font-size:16px; color:#effffa; margin-top:4px; line-height:1.45; }
 .wl { display:inline-block; min-width:54px; font-family:'Share Tech Mono',monospace; font-size:12px; color: var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-right:6px; }
 .wloc { font-size:13px; color:#8fd9c7; margin-top:6px; }
+.condensed { border:1.5px solid var(--mint); border-radius:16px; padding:14px 18px 6px 18px; margin: 10px 0 16px 0;
+    background: radial-gradient(circle at 0% 0%, rgba(0,255,198,.16), rgba(0,0,0,.85) 70%);
+    box-shadow: 0 0 18px rgba(0,255,198,.3), inset 0 0 14px rgba(0,255,198,.08); }
+.condensed .ch { font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:3px; color: var(--magenta);
+    text-shadow: 0 0 8px rgba(255,43,214,.7); margin-bottom:6px; }
+.condensed p { font-size: 19px; line-height: 1.6; color: #fff; margin: 0 0 10px 0; }
 .stats { display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin: 6px 0 14px 0; }
 @media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 .stat { background: rgba(0,0,0,.75); border:1px solid rgba(0,229,255,.4); border-radius:12px; padding:10px 14px;
@@ -422,10 +428,12 @@ components.html(face, height=900, scrolling=False)
 st.write("---")
 st.markdown(f"## 🔮 Oracle reading · {word}")
 READING = R.build_reading(word, active_len, list(ss.offsets), grid, found, gifts, intents, MEANINGS)
-story = C.synthesis(word, gifts, intents, num_desc, MEANINGS)
+story = R.condensed(word, gifts, intents, MEANINGS)
 
 st.caption(f"A reading written from this exact turn of the rings — {len(gifts)} Gifts, {len(intents)} Intents, "
            f"where each one sits, and how their numbers meet. Change one ring and the whole reading changes.")
+st.markdown(f"<div class='condensed'><div class='ch'>✦ THE READING IN BRIEF</div>"
+            f"<p>{html.escape(story.replace(' - ', ' — '))}</p></div>", unsafe_allow_html=True)
 for i, (head, paras) in enumerate(READING):
     body = "".join(f"<p>{html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>" for x in paras)
     kind = " intent" if head.startswith("The Intents") else ""
@@ -480,13 +488,13 @@ st.markdown("#### ◈ Save & print")
 d1, d2, d3 = st.columns(3)
 with d1:
     st.download_button("📄  TEXT FILE (.txt)",
-                       data=C.build_text_report(word, active_len, grid, found, gifts, intents, num, settings_desc, MEANINGS, READING),
+                       data=C.build_text_report(word, active_len, grid, found, gifts, intents, num, settings_desc, MEANINGS, [("The reading in brief", [story])] + READING),
                        file_name=f"cryptex_{word.lower()}_{stamp}.txt", mime="text/plain", use_container_width=True,
                        help="Plain text with every letter in its own column — open in any editor and print. "
                             "Includes the full cylinder, a GIFT map, an INTENT map and the word lists.")
 with d2:
     st.download_button("🖨️  PRINTABLE PAGE (.html)",
-                       data=C.build_print_html(word, active_len, grid, found, gifts, intents, num, MEANINGS, READING),
+                       data=C.build_print_html(word, active_len, grid, found, gifts, intents, num, MEANINGS, [("The reading in brief", [story])] + READING),
                        file_name=f"cryptex_{word.lower()}_{stamp}.html", mime="text/html", use_container_width=True,
                        help="Open in a browser and print (or Save as PDF). Colored grid, ink-friendly.")
 with d3:

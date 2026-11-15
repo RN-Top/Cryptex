@@ -447,3 +447,98 @@ def reading_text(sections, width=74):
             out += C._wrap(para, width=width, indent="  ")
             out.append("")
     return out
+
+
+NUMBER_ACTION = {
+    1: "take the first step yourself",
+    2: "move together, not alone",
+    3: "say it out loud",
+    4: "build it slowly and steadily",
+    5: "let the change happen",
+    6: "take care of your people - and yourself",
+    7: "go quiet and trust what you already know",
+    8: "claim your power",
+    9: "let the old chapter close",
+}
+
+
+_TRAILING = {"a", "an", "the", "of", "to", "in", "into", "on", "for", "with", "and", "or", "so", "as",
+             "by", "at", "from", "that", "which", "is", "being", "its", "your", "their", "his", "her",
+             "who", "through", "about", "usually", "noted", "especially", "when", "where", "than", "are", "was"}
+
+
+def gist(w, meanings, words=5):
+    """A tiny meaning for one word: its first clause, cut at a natural word boundary.
+    Returns '' when no clean short meaning exists."""
+    m, _ = meaning_of(w, meanings, 200)
+    if not m:
+        return ""
+    text = m[1].replace('"', "").replace("'s ", "'s ")
+    text = re.sub(r"\([^)]*\)", "", text)
+    text = re.split(r";|,| - | — |\. |:", text)[0].strip(" .")
+    if m[0] == "name" and ":" in m[1]:            # names: 'Hebrew: "grace"' -> 'grace'
+        text = m[1].split(":", 1)[1].replace('"', "").strip(" .")
+    parts = text.split()
+    if len(parts) > words:
+        parts = parts[:words]
+    while len(parts) > 1 and parts[-1].lower().strip(",.") in _TRAILING:
+        parts.pop()
+    text = " ".join(parts).strip(" ,.")
+    if len(text) < 3 or re.search(r"\d|\bpers\b|^see |^imp$|^p\. ?p|^pl$|^obs", text, re.I):
+        return ""
+    words_ = text.split()
+    if not (len(words_) > 1 and sum(x[:1].isupper() for x in words_) == len(words_)):   # keep "Oh My God"
+        text = lower_first(text)
+    return text
+
+
+def condensed(main_word, gifts, intents, meanings):
+    """The whole reading in a few sentences: every word found, each with a short meaning,
+    then what it all means together."""
+    main_n = C.numerology(main_word)[0]
+    g = [w for w, _, _ in gifts if w != main_word]
+    i = [w for w, _, _ in intents if w != main_word]
+    gift_n = reduce_num(sum(word_num(w) for w in g)) if g else 0
+    intent_n = reduce_num(sum(word_num(w) for w in i)) if i else 0
+    whole = reduce_num(main_n + gift_n + intent_n)
+
+    def tagged(ws):
+        out = []
+        for w in ws:
+            t = gist(w, meanings)
+            out.append(f"{w} ({t})" if t else w)
+        return join_words(out)
+
+    mg = gist(main_word, meanings, 7)
+    head = f"{main_word}{' (' + mg + ')' if mg else ''}"
+    if not g and not i:
+        return (f"{head} stands alone - no other words formed around it. "
+                f"The meaning of it all: the answer is the word itself, and it comes down to {NUMBER_KEY[main_n]} - "
+                f"{NUMBER_ACTION[main_n]}.")
+
+    sentences = []
+    if g:
+        sentences.append(f"{head} is given {tagged(g)}.")
+    if i:
+        sentences.append(f"{'Beneath it, the intent' if g else head + ' carries the intent'} is {tagged(i)}.")
+
+    def best(ws):
+        for w in ws[:8]:
+            t = gist(w, meanings, 6)
+            if t:
+                return w, t
+        return (ws[0], "") if ws else (None, "")
+
+    gw, gt = best(g)
+    iw, it = best(i)
+    through = f"through {main_word}{' - ' + mg + ' -' if mg else ''}"
+    if g and i:
+        meaning = (f"{through} you are being offered {gw}{' (' + gt + ')' if gt else ''}, "
+                   f"but the real force underneath is {iw}{' (' + it + ')' if it else ''}")
+    elif g:
+        meaning = f"{through} you are being offered {gw}{' (' + gt + ')' if gt else ''}, with nothing hidden behind it"
+    else:
+        meaning = f"{through} nothing is handed over yet - the force at work is {iw}{' (' + it + ')' if it else ''}"
+    sentences.append(f"The meaning of it all: {meaning}. It comes down to {whole}, {NUMBER_KEY[whole]} - "
+                     f"{NUMBER_ACTION[whole]}.")
+    return " ".join(sentences)
