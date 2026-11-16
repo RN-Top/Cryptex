@@ -75,6 +75,12 @@ hr { border-color: rgba(0,255,198,.25) !important; }
     box-shadow: 0 0 10px rgba(255,43,214,.5), inset 0 0 10px rgba(255,43,214,.15); }
 .stButton > button[kind="primary"]:hover { background: rgba(255,43,214,.14) !important; box-shadow: 0 0 18px rgba(255,43,214,.9); }
 
+/* Individual / The Whole switch */
+[data-testid="stRadio"] > label p { font-family:'Orbitron',sans-serif !important; color: var(--cyan) !important; letter-spacing:2px; font-size:13px !important; }
+[data-testid="stRadio"] [role="radiogroup"] label { background: rgba(0,0,0,.7); border:1px solid rgba(0,255,198,.45);
+    border-radius: 999px; padding: 4px 14px 4px 8px; margin-right: 8px; }
+[data-testid="stRadio"] [role="radiogroup"] label p { font-family:'Orbitron',sans-serif !important; font-size:14px !important; color: var(--mint) !important; }
+
 /* Inputs */
 [data-testid="stTextInput"] input, [data-baseweb="select"] > div {
     background: #05080a !important; color: #fff !important; border: 1.5px solid var(--cyan) !important;
@@ -215,6 +221,12 @@ with st.expander("⚙️  Lexicon & search settings", expanded=False):
         hide_nested = st.checkbox("Hide small words sitting inside bigger ones (e.g. EAR in HEART)", value=True)
 
 lookup = get_lookup(tuple(sorted(enabled)), clean_mode)
+
+# ============================================================ WHO THE READING IS FOR
+mode_label = st.radio("Reading for", ["👤  Individual", "🌐  The Whole"], horizontal=True, key="mode",
+                      help="Individual speaks to you and your life. The Whole reads the bigger picture - "
+                           "the collective, the world and the spiritual, all of us together.")
+MODE = "whole" if "Whole" in mode_label else "individual"
 
 # ============================================================ CONTROLS
 c1, c2 = st.columns([1, 1])
@@ -465,8 +477,8 @@ components.html(face, height=900, scrolling=False)
 # ============================================================ READING
 st.write("---")
 st.markdown(f"## 🔮 Oracle reading · {word}")
-READING = R.build_reading(word, active_len, list(ss.offsets), grid, found, gifts, intents, MEANINGS)
-story = R.condensed(word, gifts, intents, MEANINGS, list(ss.offsets), active_len, grid, found)
+READING = R.build_reading(word, active_len, list(ss.offsets), grid, found, gifts, intents, MEANINGS, mode=MODE)
+story = R.condensed(word, gifts, intents, MEANINGS, list(ss.offsets), active_len, grid, found, mode=MODE)
 
 st.caption(f"A reading written from this exact turn of the rings — {len(gifts)} Gifts, {len(intents)} Intents, "
            f"where each one sits, and how their numbers meet. Change one ring and the whole reading changes.")
@@ -479,7 +491,8 @@ def brief_html(text):
     return t
 
 
-st.markdown(f"<div class='condensed'><div class='ch'>✦ THE READING IN BRIEF</div>"
+st.markdown(f"<div class='condensed'><div class='ch'>✦ THE READING IN BRIEF · "
+            f"{'FOR THE WHOLE' if MODE == 'whole' else 'FOR YOU'}</div>"
             f"<p>{brief_html(story)}</p></div>", unsafe_allow_html=True)
 for i, (head, paras) in enumerate(READING):
     body = "".join(f"<p>{brief_html(x.replace(' -> ', ' → ')) if x.startswith('The truth:') else html.escape(x.replace(' -> ', ' → ').replace(' - ', ' — '))}</p>"
@@ -526,7 +539,7 @@ with wc2:
 
 # ============================================================ SAVE / PRINT
 dirs_on = [n for n, on in (("horizontal", use_h), ("diagonal", use_d), ("vertical", use_v)) if on]
-settings_desc = (f"sources: {', '.join(enabled) or 'none'} / directions: {', '.join(dirs_on) or 'none'} / "
+settings_desc = (f"reading for: {'the whole' if MODE == 'whole' else 'individual'} / sources: {', '.join(enabled) or 'none'} / directions: {', '.join(dirs_on) or 'none'} / "
                  f"min length {min_len} / nested words {'hidden' if hide_nested else 'shown'} / "
                  f"clean mode {'on' if clean_mode else 'off'}")
 stamp = time.strftime('%Y%m%d_%H%M%S')
@@ -547,7 +560,7 @@ with d2:
                        help="Open in a browser and print (or Save as PDF). Colored grid, ink-friendly.")
 with d3:
     if st.button("💾  SAVE TO LOG", use_container_width=True):
-        ss.journal.append({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "word": word, "num": total_num,
+        ss.journal.append({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "word": word, "num": total_num, "mode": MODE,
                            "title": num_title, "guidance": num_guidance,
                            "gifts": [w for w, _, _ in gifts[:10]], "intents": [w for w, _, _ in intents[:10]],
                            "story": story, "reading": READING})
@@ -559,7 +572,8 @@ if ss.journal:
         log_lines = []
         for idx, e in enumerate(reversed(ss.journal)):
             n = len(ss.journal) - idx
-            st.markdown(f"**#{n} · {e['word']}** — Vibration {e['num']} ({e['title']}) · *{e['time']}*")
+            st.markdown(f"**#{n} · {e['word']}** — {'The Whole' if e.get('mode') == 'whole' else 'Individual'} · "
+                        f"Vibration {e['num']} ({e['title']}) · *{e['time']}*")
             if e["gifts"]:
                 st.markdown(f"<span class='neon-gift'>Gifts:</span> {', '.join(e['gifts'])}", unsafe_allow_html=True)
             if e["intents"]:

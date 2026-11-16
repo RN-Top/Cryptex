@@ -655,3 +655,117 @@ def reading_text(sections, width=74):
         for para in paras:
             out += C._wrap(para, width=width, indent="  ") + [""]
     return out
+
+
+# ------------------------------------------------------------------ The Whole: the same reading, for the whole picture
+# Individual readings speak to "you". Whole readings speak to all of us - the world and the spirit together.
+NUMBER_QUESTIONS_WHOLE = {
+    1: ["What would all of us start today if no one had to approve it?",
+        "Where is the whole waiting for permission it doesn't actually need?"],
+    2: ["Who is the quiet partner in the bigger story - and is anyone listening to them?",
+        "What balance, on earth and in spirit, is asking to be restored?"],
+    3: ["What truth is the collective holding back from saying out loud?",
+        "Where would joy, not effort, carry all of us farther?"],
+    4: ["What foundation does the whole need before it builds any higher?",
+        "Which shared practice, kept daily, would change everything in a year?"],
+    5: ["What is the whole ready to let change, even though it feels unfamiliar?",
+        "Where is a door open that all of us keep walking past?"],
+    6: ["Who most needs care right now - and who is giving it?",
+        "What boundary would make the whole kinder, not smaller?"],
+    7: ["What does the collective already know, deep down, that it hasn't admitted yet?",
+        "What would spirit say if the world went quiet enough to hear it?"],
+    8: ["Who holds power right now - on earth or in spirit - and is it being used well?",
+        "Where is shared power leaking out, and where should it go instead?"],
+    9: ["What age is asking all of us to close it with grace?",
+        "What does the collective need to forgive to move on lighter?"],
+}
+
+WHOLE_REPLACE = [
+    # actions (NUMBER_ACTION / NUMBER_ACTION_ING)
+    ("take the first step yourself", "take the first step together"),
+    ("take care of your people - and yourself", "take care of one another"),
+    ("go quiet and trust what you already know", "go quiet and listen to spirit"),
+    ("claim your power", "use shared power wisely"),
+    ("let the old chapter close", "let the old age close"),
+    ("making the first move yourself", "taking the first step together"),
+    ("working with someone instead of alone", "working together instead of apart"),
+    ("taking care of your people - and yourself", "taking care of one another"),
+    ("going quiet and trusting what you already know", "going quiet and listening to spirit"),
+    ("claiming your power", "using shared power wisely"),
+    ("letting the old chapter close", "letting the old age close"),
+    # the truth
+    ("that's the part working against you.", "that's the part working against the whole."),
+    ("that part you can trust.", "that part all of us can trust."),
+    ("Don't let it talk you past the warning.", "Don't let it distract from the warning."),
+    ("the motive is on your side.", "the motive serves the whole."),
+    ("and it's working for you.", "and it's working for all of us."),
+    ("pulls for you, ", "pulls for the whole, "),
+    (" pulls against you.", " pulls against it."),
+    (" on your side, ", " on the side of the whole, "),
+    ("what you do with it is your call.", "what we do with it is a shared choice."),
+    ("read that one closely and decide for yourself.", "read that one closely; the outcome is open."),
+    ("The rest is up to you.", "The rest is up to all of us."),
+    ("Nothing forces your hand.", "Nothing forces the collective's hand."),
+    ("but it doesn't decide for you.", "but it doesn't decide the outcome."),
+    ("some of it helps you, some of it doesn't.", "some of it helps the whole, some of it doesn't."),
+    ("Nothing is pushing you; you decide.", "Nothing is pushing the whole; the choice is shared."),
+    ("be honest about why you chose it.", "be honest about why it was chosen."),
+    # signature, placement, above/below
+    ("the word you set is echoing back at you.", "the word that was set is echoing back."),
+    ("what you're given and why", "what all of us are given and why"),
+    ("a direct consequence of the word you set.", "a direct consequence of the word that was set."),
+    ("what is rooted or already behind you:", "what is rooted in the past of all things:"),
+    ("what already shaped you", "what already shaped all of us"),
+    # counsel
+    ("is on its way to you - make room for it.", "is on its way to all of us - make room for it."),
+    ("is already in your roots - use what you have.", "is already in the roots of the whole - use what is already here."),
+    ("You already carry ", "All of us already carry "),
+    ("it's behind you, but it still feeds you.", "it's in the past, but it still feeds the present."),
+    ("it's already in your hands.", "it's already in our hands."),
+    ("confront it before it acts for you.", "confront it before it acts for everyone."),
+    ("don't let it make your choices.", "don't let it make the collective's choices."),
+    ("is on your side - trust it.", "serves the whole - trust it."),
+    ("notice where that's moving you.", "notice where that's moving all of us."),
+    ("once you see it, you can choose with it or against it.", "once it's seen, all of us can choose with it or against it."),
+    # questions built from words
+    ("What would change if you treated ", "What would change if we all treated "),
+    ("showing up in your life right now?", "showing up in the world - and in spirit - right now?"),
+    ("as a message meant for you?", "as a message meant for all of us?"),
+    ("in your life right now?", "in the bigger picture right now?"),
+    ("What would it take for you to ", "What would it take for all of us to "),
+    ("Where are you being asked to ", "Where is the whole being asked to "),
+    (" - and are you resisting it?", " - and is it resisting?"),
+    ("Where in your life do you need to be ", "Where does the whole need to be "),
+    ("What would it look like to be ", "What would it look like for all of us to be "),
+    ("mean for you today?", "mean for all of us today?"),
+    ("Why would the cylinder show you ", "Why would the cylinder show all of us "),
+    # brief
+    (" brings you ", " brings all of us "),
+    ("nothing is handed over yet", "nothing is handed to the whole yet"),
+]
+for _n, _qs in NUMBER_QUESTIONS.items():
+    for _q, _e in zip(_qs, NUMBER_QUESTIONS_WHOLE[_n]):
+        WHOLE_REPLACE.append((_q, _e))
+WHOLE_REPLACE.sort(key=lambda pair: -len(pair[0]))   # longest phrases first
+
+
+def to_whole(text):
+    for a, b in WHOLE_REPLACE:
+        text = text.replace(a, b)
+    return text
+
+
+_build_reading_individual = build_reading
+_condensed_individual = condensed
+
+
+def build_reading(main_word, active_len, offsets, grid, found, gifts, intents, meanings, mode="individual"):
+    secs = _build_reading_individual(main_word, active_len, offsets, grid, found, gifts, intents, meanings)
+    if mode == "whole":
+        secs = [(h, [to_whole(p) for p in ps]) for h, ps in secs]
+    return secs
+
+
+def condensed(main_word, gifts, intents, meanings, offsets=None, active_len=None, grid=None, found=None, mode="individual"):
+    text = _condensed_individual(main_word, gifts, intents, meanings, offsets, active_len, grid, found)
+    return to_whole(text) if mode == "whole" else text

@@ -52,6 +52,7 @@ When a word is dialed onto the main row, the other 25 rows around the cylinder l
 - **Hide nested words** — keeps EAR from cluttering the list when HEART is found (can be turned off).
 - **Ring dials** — ▲ / ▼ for each ring, side by side even on a phone.
 - **Random Spin** and **Align Word** (type up to 6 letters, press Enter).
+- **Individual or The Whole** — a switch at the top. *Individual* speaks to you and your life; *The Whole* reads the bigger picture — the collective, the world and the spiritual, all of us together. Same cylinder, same words and numbers; the reading changes its point of view.
 - **The reading in brief** — every word found with a short plain meaning, *the meaning of it all*, and **the truth**: WARNING, GOOD SIGN, MIXED or NEUTRAL. Only clearly dark words (ROB, KILL, CURSE, POISON…) count as warnings and only clearly good words (JOY, PEACE, HEAL, LOVE…) as good signs — no guessing from definitions. A dark motive among the Intents weighs more than a dark Gift. The truth is said once, in wording that changes with every spin.
 - **The Oracle reading** — short and precise (usually 200–400 words), written from *this exact spin*:
   1. **The signature** — opens with what is unusual about this spin: the main word echoing elsewhere, a word that is both Gift and Intent, a mirror pair, matching numbers, a repeated word, a sacred word, a branch from the main word…
