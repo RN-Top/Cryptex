@@ -222,8 +222,10 @@ def placement(o):
 def analyze(main_word, active_len, grid, found, gifts, intents, meanings):
     a = {"main": main_word}
     a["main_n"], a["main_title"], a["main_desc"], a["main_guide"] = C.numerology(main_word)
-    a["g"] = [x for x in gifts if x[0] != main_word]
-    a["i"] = [x for x in intents if x[0] != main_word]
+    def piece_of_main(occ):   # e.g. REAL inside ISREAL: lies entirely on the main line
+        return all(all(r == C.CENTER for r, _ in o["cells"]) for o in occ)
+    a["g"] = [x for x in gifts if x[0] != main_word and not piece_of_main(x[2])]
+    a["i"] = [x for x in intents if x[0] != main_word and not piece_of_main(x[2])]
     gw = [w for w, _, _ in a["g"]]
     iw = [w for w, _, _ in a["i"]]
     a["gift_n"] = reduce_num(sum(word_num(w) for w in gw)) if gw else 0
@@ -454,55 +456,161 @@ def build_reading(main_word, active_len, offsets, grid, found, gifts, intents, m
 
     # 5. As above, so below
     z = a["zones"]
+
+    def uniq(pairs):
+        seen, out = set(), []
+        for d, w in pairs:
+            if w not in seen:
+                seen.add(w)
+                out.append((d, w))
+        return out
+    above, below = uniq(z["above"]), uniq(z["below"])
     p = []
-    if z["above"] or z["below"]:
-        if z["above"]:
-            p.append(f"In the light above the line - what is arriving: {join_words(w for _, w in z['above'][:5])}. "
-                     f"Closest is {z['above'][0][1]}.")
-        if z["below"]:
-            p.append(f"In the dark below - what is rooted or already behind you: {join_words(w for _, w in z['below'][:5])}. "
-                     f"Deepest is {z['below'][-1][1]}.")
-        na, nb = len(z["above"]), len(z["below"])
+    if above:
+        shown = [w for _, w in above[:5]]
+        p.append(f"In the light above the line - what is arriving: {join_words(shown)}"
+                 f"{' (and ' + str(len(above) - 5) + ' more)' if len(above) > 5 else ''}. Closest is {above[0][1]}.")
+    if below:
+        shown = [w for _, w in below[:5]]
+        deepest = below[-1][1]
+        p.append(f"In the dark below - what is rooted or already behind you: {join_words(shown)}"
+                 f"{' (and ' + str(len(below) - 5) + ' more)' if len(below) > 5 else ''}. "
+                 f"{'Deepest of all is ' + deepest + '.' if deepest not in shown else 'Deepest is ' + deepest + '.'}")
+    if above or below:
+        na, nb = len(above), len(below)
         if na != nb:
             p.append(f"With {na} above and {nb} below, this turn is mostly about "
                      f"{'what comes next' if na > nb else 'what already shaped you'}.")
         secs.append(("As above, so below", [" ".join(p)]))
 
-    # 6. Counsel - follows the verdict, one clear order of action, a question
-    p = []
-    k = a["kind"]
-    if k == "warn":
-        if a["bad_i"]:
-            p.append(f"Deal with {wm(a['bad_i'][0], meanings)} first - that's the root of it.")
-        if a["bad_g"]:
-            p.append(f"Turn down {wm(a['bad_g'][0], meanings)}.")
-        p.append(f"Hold to {m} and don't let this turn pull you off it.")
-    elif k == "good":
-        best = (a["good_g"] or [w for w, _, _ in a["g"] if gist(w, meanings)] or [None])[0]
-        if best:
-            p.append(f"Accept {wm(best, meanings)}.")
-        if a["bad_i"]:
-            p.append(f"Keep one eye on {a['bad_i'][0]} underneath.")
-        p.append(f"Carry it the way {m} would.")
-    elif k == "mixed":
-        good_w = (a["good_g"] + a["good_i"])[:1]
-        bad_w = (a["bad_i"] + a["bad_g"])[:1]
-        keep = good_w[0] if good_w else "what helps"
-        drop = bad_w[0] if bad_w else "what doesn't"
-        p.append(f"Keep {keep}, drop {drop} - take this turn apart piece by piece.")
-    else:
-        top = (a["g"] or a["i"] or [(None,)])[0][0]
-        p.append(f"Nothing forces your hand{'; ' + top + ' is the strongest signal' if top else ''}. Choose deliberately.")
-    w_n = a["whole"]
-    if w_n == mn:
-        p.append(f"{m} and the whole reading agree on {mn}: {NUMBER_ACTION[mn]}.")
-    else:
-        caveat = ", once the warning is handled" if k == "warn" else ""
-        p.append(f"Order of action: first {NUMBER_ACTION[mn]} ({m}'s {mn}), then {NUMBER_ACTION[w_n]} "
-                 f"(the whole reading's {w_n}){caveat}.")
-    p.append(f"Carry this question: {rng.choice(NUMBER_QUESTIONS[w_n])}")
-    secs.append(("Counsel", [" ".join(p)]))
+    # 6. Counsel - built from this spin's own words, not stock lines
+    secs.append(("Counsel", counsel(a, grid, meanings, rng)))
     return secs
+
+
+def _pos(w, meanings):
+    info = C.explain(w, meanings)
+    return info["lines"][0][0] if info["lines"] else ""
+
+
+def _occ(a, w):
+    for x in a["g"] + a["i"]:
+        if x[0] == w:
+            return x[2][0]
+    return None
+
+
+def _where_advice(a, w, meanings, rng, kind):
+    """What to do with a word, given where it sits on the cylinder."""
+    o = _occ(a, w)
+    m = a["main"]
+    zone = placement(o)[0] if o else "on"
+    tw = wm(w, meanings)
+    if kind == "bad":
+        return rng.choice([f"{tw} is in this turn - refuse it, however it's offered.",
+                           f"Turn {tw} down before it settles in.",
+                           f"Don't take {tw}, even if it looks harmless."])
+    if zone == "above":
+        return rng.choice([f"{tw} is on its way to you - make room for it.",
+                           f"Watch for {tw}; it hasn't arrived yet, but it's coming.",
+                           f"{tw} is still forming above the line - get ready to receive it."])
+    if zone == "below":
+        return rng.choice([f"{tw} is already in your roots - use what you have.",
+                           f"You already carry {tw}; look at where it came from.",
+                           f"{tw} sits below the line - it's behind you, but it still feeds you."])
+    for bw, ch, c in a["branches"]:
+        if bw == w:
+            return rng.choice([f"{tw} grows out of the {ch} in {m} - it's already in your hands.",
+                               f"{tw} comes straight from the {ch} in {m}; act on it directly."])
+    return rng.choice([f"{tw} is right here on the main line - deal with it now.",
+                       f"{tw} is present now; don't postpone it."])
+
+
+def _intent_advice(a, w, meanings, rng):
+    tw = wm(w, meanings)
+    t = tone(w)
+    if t < 0:
+        return rng.choice([f"Underneath, {tw} is doing the steering - confront it before it acts for you.",
+                           f"The hidden driver is {tw}. Name it out loud and it loses its grip.",
+                           f"{tw} is the motive under the surface; don't let it make your choices."])
+    if t > 0:
+        return rng.choice([f"Underneath, {tw} is on your side - trust it.",
+                           f"The motive is {tw}; let it lead.",
+                           f"{tw} drives this from below, and it's a good driver."])
+    return rng.choice([f"Underneath it all is {tw} - notice where that's moving you.",
+                       f"The real driver is {tw}; once you see it, you can choose with it or against it.",
+                       f"Read backward, this turn is about {tw}. Keep that in view."])
+
+
+NUMBER_ACTION_ING = {
+    1: "making the first move yourself",
+    2: "working with someone instead of alone",
+    3: "saying it out loud",
+    4: "building slowly and steadily",
+    5: "letting the change happen",
+    6: "taking care of your people - and yourself",
+    7: "going quiet and trusting what you already know",
+    8: "claiming your power",
+    9: "letting the old chapter close",
+}
+
+
+def _question(a, key, meanings, rng):
+    """A closing question made from the key word's own meaning."""
+    if key:
+        t = gist(key, meanings, 4)
+        pos = _pos(key, meanings)
+        if t and pos == "noun":
+            return rng.choice([f"Where is {t} showing up in your life right now?",
+                               f"What would change if you treated {key} - {t} - as a message meant for you?",
+                               f"Who or what is the {key} in your life right now?"])
+        if t and pos == "verb":
+            return rng.choice([f"What would it take for you to {t}?",
+                               f"Where are you being asked to {t} - and are you resisting it?"])
+        if t and pos == "adj":
+            return rng.choice([f"Where in your life do you need to be {t}?",
+                               f"What would it look like to be {t} today?"])
+        if t:
+            return rng.choice([f"What does {key} - {t} - mean for you today?",
+                               f"Why would the cylinder show you {key} now?"])
+    return rng.choice(NUMBER_QUESTIONS[a["whole"]])
+
+
+def counsel(a, grid, meanings, rng):
+    m, mn, w_n, k = a["main"], a["main_n"], a["whole"], a["kind"]
+    gws = [w for w, _, _ in a["g"]]
+    iws = [w for w, _, _ in a["i"]]
+    defined = lambda ws: [w for w in ws if gist(w, meanings)]
+    p = []
+    # what to do with what is given
+    if k == "warn" and a["bad_g"]:
+        p.append(_where_advice(a, a["bad_g"][0], meanings, rng, "bad"))
+    key_g = (a["good_g"] or defined(gws) or gws or [None])[0]
+    if key_g and key_g not in a["bad_g"]:
+        p.append(_where_advice(a, key_g, meanings, rng, "good" if tone(key_g) > 0 else "plain"))
+    # what to do about what is meant
+    key_i = (a["bad_i"] or a["good_i"] or defined(iws) or iws or [None])[0]
+    if key_i:
+        p.append(_intent_advice(a, key_i, meanings, rng))
+    if not gws and not iws:
+        p.append(f"No other word formed, so the counsel is {m} itself - {gist(m, meanings, 8) or 'its letters and its number'}.")
+    # numbers, tied to an actual word where possible
+    carrier = next((w for w in gws + iws if word_num(w) == w_n and tone(w) >= 0), None)
+    caveat = " - after the warning is dealt with" if k == "warn" else ""
+    if w_n == mn:
+        p.append(rng.choice([f"{m} and the whole reading both land on {mn}: the work is {NUMBER_ACTION_ING[mn]}{caveat}.",
+                             f"Everything here adds up to {mn}, the same as {m} - so this is about {NUMBER_ACTION_ING[mn]}{caveat}."]))
+    elif carrier:
+        p.append(rng.choice([f"{carrier} carries the reading's number, {w_n} - start there, by {NUMBER_ACTION_ING[w_n]}{caveat}.",
+                             f"The whole reading comes to {w_n}, and {carrier} holds that number: the way through is {NUMBER_ACTION_ING[w_n]}{caveat}."]))
+    else:
+        p.append(rng.choice([f"Start by {NUMBER_ACTION_ING[mn]} ({m}'s {mn}), then move to {NUMBER_ACTION_ING[w_n]} (the reading's {w_n}){caveat}.",
+                             f"{m}'s {mn} asks for {NUMBER_ACTION_ING[mn]}; the reading as a whole ({w_n}) asks for {NUMBER_ACTION_ING[w_n]} - in that order{caveat}."]))
+    q_key = key_i if (key_i and rng.random() < 0.5) else (key_g or key_i)
+    p.append("Carry this question: " + _question(a, q_key, meanings, rng))
+    return [" ".join(p)]
+
+
 
 
 def condensed(main_word, gifts, intents, meanings, offsets=None, active_len=None, grid=None, found=None):
